@@ -13,8 +13,17 @@
         <connectMessage>Kết nối với chúng tôi để xem hướng dẫn và sử dụng các tiện ích miễn phí</connectMessage>
     </brand>
 
-    <!-- HỆ SINH THÁI CÁC ỨNG DỤNG KHÁC (Chỉ hiển thị viFix) -->
+    <!-- HỆ SINH THÁI CÁC ỨNG DỤNG (vietTeach và viFix) -->
     <ecosystem>
+        <app id="viTeach">
+            <name>vietTeach</name>
+            <badge>Đang sử dụng</badge>
+            <badgeColor>#10b981</badgeColor>
+            <tagline>Tiện ích giáo dục và tải sách giáo viên</tagline>
+            <description>Hỗ trợ giáo viên tải trọn bộ sách giáo viên, sách bài tập và chuyên đề chất lượng gốc từ taphuan.nxbgd.vn hoàn toàn miễn phí, nhanh chóng và tiện lợi.</description>
+            <url>#</url>
+            <icon>📚</icon>
+        </app>
         <app id="vifix">
             <name>viFix</name>
             <badge>Miễn phí</badge>

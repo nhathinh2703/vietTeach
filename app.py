@@ -317,40 +317,51 @@ render_html("""
     }
 
     /* CARD VIFIX */
+    /* CARDS HỆ SINH THÁI */
     .vt-eco-wrapper {
-        margin-top: 16px;
+        margin-top: 14px;
         border-top: 1px solid #e2e8f0;
-        padding-top: 14px;
+        padding-top: 12px;
     }
     .vt-eco-heading {
-        font-size: 14px;
+        font-size: 13.5px;
         font-weight: 800;
         color: #0f172a;
         margin-bottom: 8px;
     }
+    .vt-eco-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
     .vt-app-item-card {
         background: #ffffff;
         border: 1px solid #e2e8f0;
-        border-radius: 14px;
-        padding: 12px 16px;
+        border-radius: 12px;
+        padding: 10px 14px;
         display: flex;
-        align-items: flex-start;
+        align-items: center;
         justify-content: space-between;
-        gap: 14px;
+        gap: 12px;
         text-decoration: none !important;
         box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        transition: all 0.2s ease;
+    }
+    .vt-app-card-current {
+        background: #f8fafc;
+        border-color: #cbd5e1;
     }
     .vt-app-item-left {
         flex: 1;
     }
     .vt-app-item-title {
-        font-size: 14px;
+        font-size: 13.5px;
         font-weight: 800;
         color: #0f172a;
         display: flex;
         align-items: center;
         gap: 6px;
-        margin-bottom: 4px;
+        margin-bottom: 3px;
     }
     .vt-app-item-badge {
         font-size: 10px;
@@ -360,16 +371,16 @@ render_html("""
         color: white;
     }
     .vt-app-item-desc {
-        font-size: 12.5px;
+        font-size: 12px;
         color: #64748b;
-        line-height: 1.45;
+        line-height: 1.4;
     }
     .vt-app-item-btn {
         display: inline-flex;
         align-items: center;
         gap: 4px;
-        padding: 6px 12px;
-        border-radius: 9px;
+        padding: 5px 12px;
+        border-radius: 8px;
         background: #eff6ff;
         color: #2563eb !important;
         font-size: 12px;
@@ -377,10 +388,22 @@ render_html("""
         border: 1px solid #bfdbfe;
         white-space: nowrap;
         text-decoration: none !important;
-        margin-top: 4px;
     }
     .vt-app-item-btn:hover {
         background: #dbeafe;
+    }
+    .vt-app-item-btn-current {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 12px;
+        border-radius: 8px;
+        background: #f1f5f9;
+        color: #475569;
+        font-size: 11.5px;
+        font-weight: 700;
+        border: 1px solid #e2e8f0;
+        white-space: nowrap;
+        user-select: none;
     }
 
     /* FOOTER */
@@ -601,12 +624,26 @@ with col_right:
                 st.error(f"❌ Có lỗi phát sinh: {str(e)}")
 
 # ==========================================
-# 5. GIỚI THIỆU VIFIX
+# 5. GIỚI THIỆU HỆ SINH THÁI ỨNG DỤNG
 # ==========================================
 eco_cards_html = []
 for app in CFG["ecosystem"]:
+    is_current = (app.get("id", "").lower() == "viTeach".lower()) or (app.get("url") == "#")
+    if is_current:
+        action_btn_html = """
+        <div class="vt-app-item-btn-current">
+            Đang mở
+        </div>
+        """
+    else:
+        action_btn_html = f"""
+        <a href="{app['url']}" target="_blank" class="vt-app-item-btn">
+            Bắt đầu sử dụng ↗
+        </a>
+        """
+
     card_html = f"""
-    <div class="vt-app-item-card">
+    <div class="vt-app-item-card {'vt-app-card-current' if is_current else ''}">
         <div class="vt-app-item-left">
             <div class="vt-app-item-title">
                 <span>{app['icon']}</span>
@@ -616,9 +653,7 @@ for app in CFG["ecosystem"]:
             </div>
             <div class="vt-app-item-desc">{app['description']}</div>
         </div>
-        <a href="{app['url']}" target="_blank" class="vt-app-item-btn">
-            Bắt đầu sử dụng ↗
-        </a>
+        {action_btn_html}
     </div>
     """
     eco_cards_html.append(card_html)
@@ -626,9 +661,11 @@ for app in CFG["ecosystem"]:
 render_html(f"""
 <div class="vt-eco-wrapper">
     <div class="vt-eco-heading">
-        <span>🌐 Ứng dụng khác trong hệ sinh thái {CFG['master_name']}:</span>
+        <span>🌐 Các ứng dụng trong hệ sinh thái {CFG['master_name']}:</span>
     </div>
-    {''.join(eco_cards_html)}
+    <div class="vt-eco-grid">
+        {''.join(eco_cards_html)}
+    </div>
 </div>
 """)
 
