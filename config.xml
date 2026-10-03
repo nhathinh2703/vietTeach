@@ -41,31 +41,31 @@
         <social id="zalo">
             <name>Nhóm Zalo</name>
             <enabled>true</enabled>
-            <url>https://zalo.me/g/vietapps</url>
+            <url>https://zalo.me/g/lapbvhp0mku5bvgle0a1</url>
             <color>#0068FF</color>
         </social>
         <social id="facebook_page">
             <name>Facebook Page</name>
             <enabled>true</enabled>
-            <url>https://facebook.com/vietapps.free</url>
+            <url>https://www.facebook.com/vietapps.official</url>
             <color>#1877F2</color>
         </social>
         <social id="facebook_group">
             <name>Facebook Group</name>
             <enabled>true</enabled>
-            <url>https://facebook.com/groups/vietapps.community</url>
+            <url>https://www.facebook.com/groups/1143352114790841</url>
             <color>#0866FF</color>
         </social>
         <social id="youtube">
             <name>YouTube</name>
             <enabled>true</enabled>
-            <url>https://youtube.com/@vietapps-free</url>
+            <url>https://www.youtube.com/@vietApps</url>
             <color>#FF0000</color>
         </social>
         <social id="tiktok">
             <name>TikTok</name>
-            <enabled>true</enabled>
-            <url>https://tiktok.com/@vietapps.free</url>
+            <enabled>false</enabled>
+            <url>#</url>
             <color>#000000</color>
         </social>
     </socials>
