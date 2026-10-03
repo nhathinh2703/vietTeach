@@ -251,24 +251,42 @@ render_html("""
         flex: 1;
     }
 
-    /* KHUNG VÍ DỤ KÈM NÚT COPY & THỬ NGAY */
+    /* KHUNG VÍ DỤ KÈM ICON COPY NHẸ NHÀNG */
     .vt-example-container {
         display: flex;
         align-items: center;
-        flex-wrap: wrap;
+        justify-content: space-between;
         gap: 8px;
         margin-top: 6px;
         background: #f0f9ff;
         border: 1px solid #bae6fd;
         border-radius: 8px;
-        padding: 7px 12px;
+        padding: 6px 10px;
     }
     .vt-example-text {
-        font-size: 12.5px;
+        font-size: 12px;
         color: #0369a1;
         font-family: ui-monospace, monospace;
         word-break: break-all;
         flex: 1;
+    }
+    .vt-btn-icon-copy {
+        background: transparent;
+        border: none;
+        color: #0284c7;
+        font-size: 14px;
+        cursor: pointer;
+        padding: 2px 6px;
+        border-radius: 4px;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .vt-btn-icon-copy:hover {
+        background: #e0f2fe;
+        color: #0369a1;
+        transform: scale(1.1);
     }
 
     /* CỘT PHẢI: CARD TẢI SÁCH */
@@ -282,20 +300,56 @@ render_html("""
         gap: 8px;
     }
 
+    /* THANH TOOLBAR ICON NHỎ GỌN TRÊN Ô NHẬP */
+    .vt-input-toolbar-subtle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 6px;
+    }
+    .vt-input-title-label {
+        font-size: 13.5px;
+        font-weight: 700;
+        color: #334155;
+    }
+    .vt-actions-subtle {
+        display: flex;
+        gap: 6px;
+    }
+    .vt-btn-icon-subtle {
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        color: #475569;
+        font-size: 12px;
+        padding: 3px 8px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.15s ease;
+    }
+    .vt-btn-icon-subtle:hover {
+        background: #e2e8f0;
+        color: #1e293b;
+    }
+    .vt-btn-clear-subtle:hover {
+        background: #fee2e2;
+        border-color: #fca5a5;
+        color: #ef4444;
+    }
+
     div[data-testid="stTextInput"] {
-        margin-bottom: 8px !important;
+        margin-bottom: 12px !important;
     }
     div[data-testid="stTextInput"] label {
-        font-size: 13.5px !important;
-        font-weight: 700 !important;
-        color: #334155 !important;
-        margin-bottom: 6px !important;
+        display: none !important;
     }
     div[data-testid="stTextInput"] input {
         border-radius: 11px !important;
         border: 1px solid #cbd5e1 !important;
         font-size: 14px !important;
-        padding: 10px 14px !important;
+        padding: 11px 14px !important;
         background: #f8fafc !important;
     }
     div[data-testid="stTextInput"] input:focus {
@@ -449,57 +503,41 @@ with col_left:
     <p class="vt-hero-p">{CFG['app_desc']}</p>
     """)
 
-    # 3 Bước hướng dẫn hiển thị trực tiếp
-    # Bước 1 & 3 render html, Bước 2 có nút native Thử ngay
-    step1 = CFG["guide_steps"][0] if len(CFG["guide_steps"]) > 0 else None
-    step2 = CFG["guide_steps"][1] if len(CFG["guide_steps"]) > 1 else None
-    step3 = CFG["guide_steps"][2] if len(CFG["guide_steps"]) > 2 else None
-
-    example_url = "https://taphuan.nxbgd.vn/tap-huan/doc-sach/sgv-tin-hoc-12.4926897532"
-    if step2 and step2.get("example"):
-        # Lấy url sạch nếu có
-        m = re.search(r'https?://[^\s]+', step2["example"])
-        if m:
-            example_url = m.group(0)
+    # 3 Bước hướng dẫn hiển thị liền mạch, tinh tế
+    steps_html = []
+    for stp in CFG["guide_steps"]:
+        ex_box = ""
+        if stp.get("example"):
+            # Trích xuất URL sách mẫu
+            raw_ex = stp['example']
+            m = re.search(r'https?://[^\s]+', raw_ex)
+            target_url = m.group(0) if m else raw_ex
+            clean_display = raw_ex.replace("Ví dụ: ", "").strip()
+            
+            ex_box = f"""
+            <div class="vt-example-container">
+                <span class="vt-example-text" id="vt-sample-link" title="{clean_display}">{clean_display}</span>
+                <button type="button" class="vt-btn-icon-copy" title="Sao chép liên kết mẫu" onclick="copySampleLink('{target_url}')">
+                    📋
+                </button>
+            </div>
+            """
+        steps_html.append(f"""
+        <div class="vt-step-row">
+            <div class="vt-num-badge">{stp['number']}</div>
+            <div class="vt-step-content">
+                <b>{stp['title']}:</b> {stp['desc']}
+                {ex_box}
+            </div>
+        </div>
+        """)
 
     render_html(f"""
-    <div class="vt-steps-box" style="margin-bottom: 0px;">
-        <div style="font-size: 13.5px; font-weight: 800; color: #0f172a; margin-bottom: 8px;">
+    <div class="vt-steps-box">
+        <div style="font-size: 13.5px; font-weight: 800; color: #0f172a; margin-bottom: 6px;">
             📌 Hướng dẫn sử dụng:
         </div>
-        <div class="vt-step-row">
-            <div class="vt-num-badge">1</div>
-            <div class="vt-step-content">
-                <b>{step1['title'] if step1 else 'Lấy link sách'}:</b> {step1['desc'] if step1 else ''}
-            </div>
-        </div>
-        <div class="vt-step-row">
-            <div class="vt-num-badge">2</div>
-            <div class="vt-step-content">
-                <b>{step2['title'] if step2 else 'Sao chép địa chỉ'}:</b> {step2['desc'] if step2 else ''}
-                <div class="vt-example-container" style="margin-top: 6px;">
-                    <span class="vt-example-text">{step2.get('example', example_url) if step2 else example_url}</span>
-                </div>
-            </div>
-        </div>
-    </div>
-    """)
-
-    # Nút bấm native Streamlit: Thử ngay link mẫu
-    c_btn1, c_btn2 = st.columns([1.6, 1])
-    with c_btn1:
-        if st.button("📋 Tự động điền link mẫu để thử", use_container_width=True):
-            st.session_state["book_url"] = example_url
-            st.rerun()
-
-    render_html(f"""
-    <div class="vt-steps-box" style="margin-top: 10px;">
-        <div class="vt-step-row" style="border-bottom: none;">
-            <div class="vt-num-badge">3</div>
-            <div class="vt-step-content">
-                <b>{step3['title'] if step3 else 'Tải file PDF'}:</b> {step3['desc'] if step3 else ''}
-            </div>
-        </div>
+        {''.join(steps_html)}
     </div>
     """)
 
@@ -508,29 +546,31 @@ with col_right:
     <div class="vt-card-header">
         <span>⚡ Tải sách giáo viên / sách bài tập</span>
     </div>
+    <div class="vt-input-toolbar-subtle">
+        <span class="vt-input-title-label">Nhập liên kết sách:</span>
+        <div class="vt-actions-subtle">
+            <button type="button" class="vt-btn-icon-subtle" title="Dán từ bộ nhớ tạm" onclick="handlePasteAction()">
+                📋 Dán
+            </button>
+            <button type="button" class="vt-btn-icon-subtle vt-btn-clear-subtle" title="Xóa ô nhập" onclick="handleClearAction()">
+                ✕ Xóa
+            </button>
+        </div>
+    </div>
     """)
 
-    # Ô nhập link gắn trực tiếp với st.session_state
+    # Ô nhập link với placeholder trang nhã
     url = st.text_input(
-        "Nhập liên kết từ taphuan.nxbgd.vn:",
+        "Nhập liên kết sách:",
         value=st.session_state["book_url"],
-        placeholder="Dán link tại đây (ví dụ: https://taphuan.nxbgd.vn/tap-huan/doc-sach/...)",
+        placeholder="https://taphuan.nxbgd.vn/tap-huan/doc-sach/sgv-tin-hoc-12.4926897532",
         key="book_url_input"
     )
 
-    # Nếu người dùng tự gõ/paste tay vào ô, cập nhật lại state
     if url != st.session_state["book_url"]:
         st.session_state["book_url"] = url
 
-    # Hàng nút thao tác: Nút Xóa ô nhập (nếu đang có chữ) và nút Bắt đầu tải
-    c_action1, c_action2 = st.columns([1, 2.5])
-    with c_action1:
-        if st.button("🗑️ Xóa link", use_container_width=True):
-            st.session_state["book_url"] = ""
-            st.rerun()
-
-    with c_action2:
-        btn_download = st.button("🚀 Bắt đầu tải sách PDF", type="primary", use_container_width=True)
+    btn_download = st.button("🚀 Bắt đầu tải sách PDF", type="primary", use_container_width=True)
 
     def fetch_book_info(book_url):
         headers = {"User-Agent": "Mozilla/5.0"}
@@ -678,3 +718,103 @@ render_html(f"""
     </div>
 </div>
 """)
+
+# ==========================================
+# 7. CLIENT-SIDE SCRIPT: XỬ LÝ COPY MẪU, DÁN VÀ XÓA Ô NHẬP
+# ==========================================
+st.html("""
+<script>
+(function() {
+    // Hàm tìm ô input chính xác xuyên qua shadow DOM/iframe nếu có
+    function getTargetInput() {
+        // Tìm ô input bên trong container của stTextInput
+        const el = document.querySelector('div[data-testid="stTextInput"] input') || 
+                   document.querySelector('input[type="text"]');
+        return el;
+    }
+
+    // Đặt giá trị và kích hoạt đầy đủ sự kiện React / Streamlit
+    window.setStreamlitInputValue = function(val) {
+        const input = getTargetInput();
+        if (!input) return;
+
+        // Dùng descriptor native để kích hoạt setter React
+        const proto = window.HTMLInputElement.prototype;
+        const nativeSetter = Object.getOwnPropertyDescriptor(proto, "value").set;
+        nativeSetter.call(input, val);
+
+        // Phát chuỗi sự kiện để Streamlit bắt nhận giá trị
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+        input.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Enter' }));
+        input.focus();
+    };
+
+    // Toast thông báo nhỏ góc màn hình
+    window.showToastNotice = function(msg) {
+        let toast = document.getElementById('vt-custom-toast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'vt-custom-toast';
+            toast.style = 'position:fixed;bottom:20px;right:20px;z-index:999999;background:#0f172a;color:#ffffff;padding:8px 16px;border-radius:8px;font-size:12.5px;font-weight:600;box-shadow:0 8px 20px rgba(0,0,0,0.25);transition:opacity 0.25s ease;pointer-events:none;';
+            document.body.appendChild(toast);
+        }
+        toast.innerText = msg;
+        toast.style.opacity = '1';
+        toast.style.display = 'block';
+        clearTimeout(window.__toastTimer);
+        window.__toastTimer = setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => toast.style.display = 'none', 250);
+        }, 2200);
+    };
+
+    // 1. Sao chép link mẫu và tự động điền vào ô
+    window.copySampleLink = function(url) {
+        const link = url || "https://taphuan.nxbgd.vn/tap-huan/doc-sach/sgv-tin-hoc-12.4926897532";
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(link).then(() => {
+                window.setStreamlitInputValue(link);
+                window.showToastNotice("📋 Đã sao chép & tự động điền link mẫu!");
+            }).catch(() => {
+                window.setStreamlitInputValue(link);
+                window.showToastNotice("✅ Đã điền link mẫu vào ô!");
+            });
+        } else {
+            window.setStreamlitInputValue(link);
+            window.showToastNotice("✅ Đã điền link mẫu vào ô!");
+        }
+    };
+
+    // 2. Dán từ bộ nhớ tạm
+    window.handlePasteAction = async function() {
+        const input = getTargetInput();
+        if (navigator.clipboard && navigator.clipboard.readText) {
+            try {
+                const text = await navigator.clipboard.readText();
+                if (text && text.trim().length > 0) {
+                    window.setStreamlitInputValue(text.trim());
+                    window.showToastNotice("📋 Đã dán link vào ô!");
+                    return;
+                }
+            } catch (err) {
+                // Trình duyệt hỏi quyền hoặc từ chối
+            }
+        }
+        if (input) {
+            input.focus();
+            input.select();
+            window.showToastNotice("💡 Vui lòng nhấn Ctrl + V để dán!");
+        }
+    };
+
+    // 3. Xóa nội dung trong ô
+    window.handleClearAction = function() {
+        window.setStreamlitInputValue("");
+        const input = getTargetInput();
+        if (input) input.focus();
+        window.showToastNotice("✕ Đã xóa ô nhập!");
+    };
+})();
+</script>
+""", unsafe_allow_javascript=True)
