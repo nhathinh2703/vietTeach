@@ -10,7 +10,7 @@ import xml.etree.ElementTree as ET
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-# Hàm render HTML an toàn, loại bỏ thụt lề để tránh lỗi Markdown code block
+# Hàm render HTML an toàn, loại bỏ thụt lề để tránh lỗi Markdown
 def render_html(html_str):
     cleaned = "\n".join(line.strip() for line in html_str.strip().splitlines())
     st.markdown(cleaned, unsafe_allow_html=True)
@@ -104,15 +104,13 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Custom CSS với cỡ chữ to rõ ràng, chuẩn viFix
+# Custom CSS phong cách viFix với các nút Copy/Paste tiện ích
 render_html("""
 <style>
-    /* Ẩn bớt thanh menu mặc định của Streamlit */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
 
-    /* Khung rộng 1200px chuẩn viFix */
     .block-container {
         max-width: 1220px !important;
         padding-top: 1rem !important;
@@ -177,7 +175,7 @@ render_html("""
         font-weight: 500;
     }
 
-    /* CỘT TRÁI: TIÊU ĐỀ & HƯỚNG DẪN */
+    /* CỘT TRÁI */
     .vt-hero-pill {
         display: inline-flex;
         align-items: center;
@@ -240,26 +238,99 @@ render_html("""
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
-        margin-top: 1px;
+        margin-top: 2px;
     }
     .vt-step-content {
         font-size: 13.5px;
         color: #334155;
         line-height: 1.5;
-    }
-    .vt-step-example {
-        font-size: 12px;
-        color: #0284c7;
-        background: #f0f9ff;
-        padding: 3px 8px;
-        border-radius: 6px;
-        margin-top: 4px;
-        display: inline-block;
-        word-break: break-all;
-        border: 1px solid #e0f2fe;
+        flex: 1;
     }
 
-    /* CỘT PHẢI: CARD TẢI SÁCH */
+    /* KHUNG VÍ DỤ KÈM NÚT COPY & THỬ NGAY */
+    .vt-example-container {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 6px;
+        background: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: 8px;
+        padding: 6px 10px;
+    }
+    .vt-example-text {
+        font-size: 12px;
+        color: #0369a1;
+        font-family: ui-monospace, monospace;
+        word-break: break-all;
+        flex: 1;
+    }
+    .vt-btn-copy-fill {
+        background: #2563eb;
+        color: white !important;
+        border: none;
+        border-radius: 6px;
+        padding: 4px 10px;
+        font-size: 11.5px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .vt-btn-copy-fill:hover {
+        background: #1d4ed8;
+        transform: translateY(-1px);
+    }
+
+    /* THANH CÔNG CỤ DÁN & XÓA TRÊN Ô NHẬP */
+    .vt-input-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 4px;
+    }
+    .vt-input-label {
+        font-size: 13.5px;
+        font-weight: 700;
+        color: #334155;
+    }
+    .vt-btn-group-actions {
+        display: flex;
+        gap: 6px;
+    }
+    .vt-btn-action {
+        background: #eff6ff;
+        color: #2563eb;
+        border: 1px solid #bfdbfe;
+        border-radius: 6px;
+        padding: 3px 9px;
+        font-size: 11.5px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .vt-btn-action:hover {
+        background: #dbeafe;
+    }
+    .vt-btn-clear {
+        background: #f8fafc;
+        color: #64748b;
+        border: 1px solid #e2e8f0;
+    }
+    .vt-btn-clear:hover {
+        background: #f1f5f9;
+        color: #dc2626;
+        border-color: #fca5a5;
+    }
+
+    /* CARD TẢI SÁCH */
     .vt-card-header {
         font-size: 17px;
         font-weight: 800;
@@ -271,10 +342,7 @@ render_html("""
     }
 
     div[data-testid="stTextInput"] label {
-        font-size: 13.5px !important;
-        font-weight: 700 !important;
-        color: #334155 !important;
-        margin-bottom: 3px !important;
+        display: none !important;
     }
     div[data-testid="stTextInput"] input {
         border-radius: 11px !important;
@@ -297,12 +365,13 @@ render_html("""
         padding: 11px 20px !important;
         box-shadow: 0 4px 12px rgba(37, 99, 235, 0.22) !important;
         border: none !important;
+        margin-top: 6px !important;
     }
     div[data-testid="stButton"] button:hover {
         background: #1d4ed8 !important;
     }
 
-    /* DANH MỤC ỨNG DỤNG KHÁC (VIFIX CARD) */
+    /* CARD VIFIX */
     .vt-eco-wrapper {
         margin-top: 16px;
         border-top: 1px solid #e2e8f0;
@@ -410,7 +479,7 @@ render_html("""
 """)
 
 # ==========================================
-# 3. TOP NAVBAR (ĐÃ BỎ LINK VIFIX VÀ VERSION)
+# 3. TOP NAVBAR
 # ==========================================
 render_html(f"""
 <div class="vt-nav-bar">
@@ -442,16 +511,25 @@ with col_left:
     <p class="vt-hero-p">{CFG['app_desc']}</p>
     """)
 
-    # 3 Bước hướng dẫn hiển thị trực tiếp (kèm link và ví dụ)
+    # 3 Bước hướng dẫn hiển thị trực tiếp (kèm nút Sao chép & Dùng thử ở mục 2)
     steps_html = []
     for stp in CFG["guide_steps"]:
-        ex_html = f"<div class='vt-step-example'>{stp['example']}</div>" if stp.get("example") else ""
+        ex_box = ""
+        if stp.get("example"):
+            ex_box = f"""
+            <div class="vt-example-container">
+                <span class="vt-example-text">{stp['example']}</span>
+                <button type="button" class="vt-btn-copy-fill" onclick="copyAndFillExample('{stp['example']}')">
+                    📋 Sao chép & Dùng thử
+                </button>
+            </div>
+            """
         steps_html.append(f"""
         <div class="vt-step-row">
             <div class="vt-num-badge">{stp['number']}</div>
             <div class="vt-step-content">
                 <b>{stp['title']}:</b> {stp['desc']}
-                {ex_html}
+                {ex_box}
             </div>
         </div>
         """)
@@ -470,10 +548,21 @@ with col_right:
     <div class="vt-card-header">
         <span>⚡ Tải sách giáo viên / sách bài tập</span>
     </div>
+    <div class="vt-input-toolbar">
+        <span class="vt-input-label">Nhập liên kết từ taphuan.nxbgd.vn:</span>
+        <div class="vt-btn-group-actions">
+            <button type="button" class="vt-btn-action" onclick="pasteToInput()">
+                📋 Dán
+            </button>
+            <button type="button" class="vt-btn-action vt-btn-clear" onclick="clearInput()">
+                ❌ Xóa
+            </button>
+        </div>
+    </div>
     """)
 
     url = st.text_input(
-        "Nhập liên kết từ taphuan.nxbgd.vn:",
+        "Nhập liên kết sách:",
         placeholder="https://taphuan.nxbgd.vn/tap-huan/doc-sach/sgv-tin-hoc-12.4926897532"
     )
 
@@ -573,7 +662,7 @@ with col_right:
                 st.error(f"❌ Có lỗi phát sinh: {str(e)}")
 
 # ==========================================
-# 5. GIỚI THIỆU ỨNG DỤNG KHÁC (CHỈ HIỂN THỊ VIFIX KÈM MÔ TẢ)
+# 5. GIỚI THIỆU VIFIX
 # ==========================================
 eco_cards_html = []
 for app in CFG["ecosystem"]:
@@ -625,3 +714,67 @@ render_html(f"""
     </div>
 </div>
 """)
+
+# ==========================================
+# 7. JAVASCRIPT HỖ TRỢ COPY & PASTE TRỰC TIẾP VÀO STREAMLIT INPUT
+# ==========================================
+st.html("""
+<script>
+function setStreamlitInput(val) {
+    const input = document.querySelector('div[data-testid="stTextInput"] input');
+    if (!input) return;
+    const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
+    nativeSetter.call(input, val);
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+    input.focus();
+}
+
+function showNotice(msg) {
+    let box = document.getElementById('vt-floating-toast');
+    if (!box) {
+        box = document.createElement('div');
+        box.id = 'vt-floating-toast';
+        box.style = 'position:fixed;bottom:24px;right:24px;z-index:999999;background:#0f172a;color:#fff;padding:10px 18px;border-radius:10px;font-size:13px;font-weight:700;box-shadow:0 10px 25px rgba(0,0,0,0.3);transition:all 0.3s ease;';
+        document.body.appendChild(box);
+    }
+    box.innerText = msg;
+    box.style.opacity = '1';
+    box.style.display = 'block';
+    setTimeout(() => {
+        box.style.opacity = '0';
+        setTimeout(() => box.style.display = 'none', 300);
+    }, 2500);
+}
+
+function copyAndFillExample(url) {
+    const targetUrl = url || "https://taphuan.nxbgd.vn/tap-huan/doc-sach/sgv-tin-hoc-12.4926897532";
+    navigator.clipboard.writeText(targetUrl).then(() => {
+        setStreamlitInput(targetUrl);
+        showNotice("✅ Đã sao chép & tự động điền link mẫu!");
+    }).catch(() => {
+        setStreamlitInput(targetUrl);
+        showNotice("✅ Đã tự động điền link mẫu vào ô nhập!");
+    });
+}
+
+async function pasteToInput() {
+    try {
+        const text = await navigator.clipboard.readText();
+        if (!text || text.trim() === '') {
+            showNotice("⚠️ Bảng tạm (Clipboard) đang trống!");
+            return;
+        }
+        setStreamlitInput(text.trim());
+        showNotice("📋 Đã dán liên kết thành công!");
+    } catch (e) {
+        showNotice("💡 Hãy bấm vào ô nhập và nhấn Ctrl + V để dán!");
+    }
+}
+
+function clearInput() {
+    setStreamlitInput("");
+    showNotice("🗑️ Đã xóa ô nhập!");
+}
+</script>
+""", unsafe_allow_javascript=True)
