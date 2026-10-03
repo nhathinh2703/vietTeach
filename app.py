@@ -11,16 +11,22 @@ import xml.etree.ElementTree as ET
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # ==========================================
-# 1. ĐỌC CẤU HÌNH TỪ FILE CONFIG.XML
+# 1. ĐỌC DỮ LIỆU ĐỘNG TỪ FILE CONFIG.XML
 # ==========================================
 def load_config(xml_path="config.xml"):
     config = {
-        "brand_name": "vietTeach",
-        "tagline": "Hệ sinh thái tiện ích hỗ trợ Giáo viên Việt Nam",
-        "copyright": "© 2026 vietTeach. Tất cả các quyền được bảo lưu.",
-        "support_email": "contact@vietteach.edu.vn",
+        "master_name": "vietApps",
+        "app_name": "viTeach",
+        "badge": "FREE",
+        "version": "v1.0.2",
+        "tagline": "Hệ sinh thái ứng dụng miễn phí",
+        "app_title": "Tiện ích Giáo dục & Tải Sách NXBGD",
+        "app_desc": "Tải trọn bộ Sách Giáo Viên, Sách Bài Tập từ taphuan.nxbgd.vn chất lượng gốc.",
+        "copyright": "© 2026 vietApps – Hệ sinh thái ứng dụng miễn phí",
+        "support_email": "hotro@vietapps.vn",
+        "ecosystem": [],
         "socials": [],
-        "donate": {"enabled": False}
+        "guide_steps": []
     }
     if not os.path.exists(xml_path):
         return config
@@ -29,20 +35,37 @@ def load_config(xml_path="config.xml"):
         tree = ET.parse(xml_path)
         root = tree.getroot()
 
-        # App Info
-        app_info = root.find("appInfo")
-        if app_info is not None:
-            config["brand_name"] = app_info.findtext("brandName", config["brand_name"])
-            config["tagline"] = app_info.findtext("tagline", config["tagline"])
-            config["copyright"] = app_info.findtext("copyright", config["copyright"])
-            config["support_email"] = app_info.findtext("supportEmail", config["support_email"])
+        # Brand
+        brand = root.find("brand")
+        if brand is not None:
+            config["master_name"] = brand.findtext("masterName", config["master_name"])
+            config["app_name"] = brand.findtext("appName", config["app_name"])
+            config["badge"] = brand.findtext("badge", config["badge"])
+            config["version"] = brand.findtext("version", config["version"])
+            config["tagline"] = brand.findtext("tagline", config["tagline"])
+            config["app_title"] = brand.findtext("appTitle", config["app_title"])
+            config["app_desc"] = brand.findtext("appDescription", config["app_desc"])
+            config["copyright"] = brand.findtext("copyright", config["copyright"])
+            config["support_email"] = brand.findtext("supportEmail", config["support_email"])
+
+        # Ecosystem
+        eco = root.find("ecosystem")
+        if eco is not None:
+            for item in eco.findall("app"):
+                config["ecosystem"].append({
+                    "id": item.get("id", ""),
+                    "name": item.findtext("name", ""),
+                    "badge": item.findtext("badge", ""),
+                    "tagline": item.findtext("tagline", ""),
+                    "url": item.findtext("url", "#"),
+                    "icon": item.findtext("icon", "grid")
+                })
 
         # Socials
         socials_node = root.find("socials")
         if socials_node is not None:
             for s in socials_node.findall("social"):
-                is_enabled = s.findtext("enabled", "false").strip().lower() == "true"
-                if is_enabled:
+                if s.findtext("enabled", "false").strip().lower() == "true":
                     config["socials"].append({
                         "id": s.get("id", ""),
                         "name": s.findtext("name", ""),
@@ -50,18 +73,15 @@ def load_config(xml_path="config.xml"):
                         "color": s.findtext("color", "#2563eb")
                     })
 
-        # Monetization (Donate)
-        donate_node = root.find("monetization/donate")
-        if donate_node is not None:
-            is_donate_on = donate_node.get("enabled", "false").strip().lower() == "true"
-            config["donate"] = {
-                "enabled": is_donate_on,
-                "message": donate_node.findtext("message", "Ủng hộ duy trì hệ thống"),
-                "bank_name": donate_node.findtext("bankName", ""),
-                "account_number": donate_node.findtext("accountNumber", ""),
-                "account_holder": donate_node.findtext("accountHolder", ""),
-                "qr_image": donate_node.findtext("qrImage", "")
-            }
+        # Guide Steps
+        guide = root.find("guideSteps")
+        if guide is not None:
+            for stp in guide.findall("step"):
+                config["guide_steps"].append({
+                    "number": stp.findtext("number", "•"),
+                    "title": stp.findtext("title", ""),
+                    "desc": stp.findtext("desc", "")
+                })
 
     except Exception as e:
         print(f"Lỗi đọc config.xml: {e}")
@@ -71,134 +91,420 @@ def load_config(xml_path="config.xml"):
 CFG = load_config()
 
 # ==========================================
-# 2. CẤU HÌNH TRANG WEB STREAMLIT
+# 2. CẤU HÌNH TRANG STREAMLIT
 # ==========================================
 st.set_page_config(
-    page_title=f"{CFG['brand_name']} - Tiện Ích Giáo Viên",
+    page_title=f"{CFG['app_name']} – {CFG['app_title']}",
     page_icon="🎓",
-    layout="centered"
+    layout="centered",
+    initial_sidebar_state="collapsed"
 )
 
-# Custom CSS cho giao diện chuyên nghiệp và gọn gàng
+# CSS phong cách đồng bộ viFix (Tailwind / Modern SaaS style)
 st.markdown("""
 <style>
-    /* Ẩn bớt footer mặc định của Streamlit */
+    /* Ẩn các thành phần mặc định của Streamlit */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
-
-    /* Styling Header */
-    .vt-header {
-        text-align: center;
-        padding: 20px 0 15px 0;
-        border-bottom: 1px solid #e2e8f0;
-        margin-bottom: 25px;
-    }
-    .vt-logo {
-        font-size: 32px;
-        font-weight: 800;
-        color: #1e3a8a;
-        letter-spacing: -0.5px;
-        margin: 0;
-    }
-    .vt-tagline {
-        font-size: 14px;
-        color: #64748b;
-        margin-top: 4px;
+    .block-container {
+        padding-top: 1rem;
+        padding-bottom: 2rem;
+        max-width: 800px;
     }
 
-    /* Menu các ứng dụng */
-    .vt-nav {
+    /* Phông chữ & Nền chung */
+    html, body, [class*="css"] {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    /* NAVBAR ĐỒNG BỘ VIFIX */
+    .vt-navbar {
         display: flex;
-        justify-content: center;
-        gap: 12px;
-        margin-top: 15px;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 18px;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 18px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        margin-bottom: 24px;
     }
-    .vt-nav-item-active {
-        background-color: #eff6ff;
-        color: #1d4ed8;
-        padding: 6px 14px;
-        border-radius: 20px;
-        font-size: 13px;
-        font-weight: 600;
-        border: 1px solid #bfdbfe;
-    }
-    .vt-nav-item-upcoming {
-        background-color: #f8fafc;
-        color: #94a3b8;
-        padding: 6px 14px;
-        border-radius: 20px;
-        font-size: 13px;
-        border: 1px dashed #cbd5e1;
-    }
-
-    /* Footer Styling */
-    .vt-footer {
-        margin-top: 45px;
-        padding: 25px 0 15px 0;
-        border-top: 1px solid #e2e8f0;
-        text-align: center;
-    }
-    .vt-social-links {
+    .vt-brand-group {
         display: flex;
-        justify-content: center;
-        flex-wrap: wrap;
+        align-items: center;
         gap: 10px;
-        margin-bottom: 16px;
     }
-    .vt-social-btn {
+    .vt-brand-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 11px;
+        background: linear-gradient(135deg, #2563eb, #4f46e5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 18px;
+        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+    }
+    .vt-brand-text {
+        font-size: 20px;
+        font-weight: 900;
+        background: linear-gradient(90deg, #2563eb, #4f46e5);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: -0.5px;
+    }
+    .vt-badge-pro {
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        padding: 2px 7px;
+        border-radius: 20px;
+        background: #dbeafe;
+        color: #1d4ed8;
+        margin-left: 6px;
+        vertical-align: middle;
+    }
+    .vt-nav-tools {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .vt-version-tag {
+        font-family: ui-monospace, monospace;
+        font-size: 11px;
+        font-weight: 700;
+        color: #475569;
+        background: #f1f5f9;
+        padding: 4px 10px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .vt-pulse-dot {
+        width: 7px;
+        height: 7px;
+        background: #3b82f6;
+        border-radius: 50%;
+        display: inline-block;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+    }
+    .vt-eco-btn {
+        font-size: 11px;
+        font-weight: 700;
+        color: #2563eb;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        padding: 4px 10px;
+        border-radius: 10px;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    .vt-eco-btn:hover {
+        background: #dbeafe;
+    }
+
+    /* HERO SECTION */
+    .vt-hero {
+        text-align: center;
+        margin-bottom: 24px;
+    }
+    .vt-pill-badge {
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        padding: 6px 14px;
-        border-radius: 8px;
-        color: #ffffff !important;
-        text-decoration: none !important;
-        font-size: 13px;
-        font-weight: 500;
-        transition: transform 0.15s ease, opacity 0.15s ease;
+        padding: 5px 14px;
+        border-radius: 9999px;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        color: #1d4ed8;
+        font-size: 12px;
+        font-weight: 700;
+        margin-bottom: 12px;
     }
-    .vt-social-btn:hover {
-        opacity: 0.9;
+    .vt-title {
+        font-size: 32px;
+        font-weight: 900;
+        color: #0f172a;
+        line-height: 1.2;
+        letter-spacing: -0.8px;
+        margin-bottom: 10px;
+    }
+    .vt-gradient-text {
+        background: linear-gradient(90deg, #2563eb, #4f46e5, #06b6d4);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .vt-desc {
+        font-size: 14px;
+        color: #64748b;
+        font-weight: 500;
+        max-width: 580px;
+        margin: 0 auto;
+        line-height: 1.5;
+    }
+
+    /* 3 BƯỚC HƯỚNG DẪN HIỂN THỊ LUÔN (RESPONSIVE) */
+    .vt-guide-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+    @media (max-width: 640px) {
+        .vt-guide-container {
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+    }
+    .vt-step-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 14px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .vt-step-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 6px;
+    }
+    .vt-step-number {
+        width: 22px;
+        height: 22px;
+        border-radius: 6px;
+        background: #2563eb;
+        color: white;
+        font-size: 11px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .vt-step-title {
+        font-size: 13px;
+        font-weight: 800;
+        color: #0f172a;
+    }
+    .vt-step-desc {
+        font-size: 11.5px;
+        color: #64748b;
+        line-height: 1.45;
+    }
+
+    /* FORM CARD KHUNG NHẬP */
+    .vt-main-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 24px;
+        padding: 22px 24px;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+        margin-bottom: 28px;
+    }
+
+    /* Tùy chỉnh input & button Streamlit cho đồng bộ */
+    div[data-testid="stTextInput"] label {
+        font-size: 12px !important;
+        font-weight: 700 !important;
+        color: #334155 !important;
+    }
+    div[data-testid="stTextInput"] input {
+        border-radius: 12px !important;
+        border: 1px solid #cbd5e1 !important;
+        font-size: 13px !important;
+        padding: 10px 14px !important;
+    }
+    div[data-testid="stTextInput"] input:focus {
+        border-color: #2563eb !important;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
+    }
+    div[data-testid="stButton"] button {
+        border-radius: 12px !important;
+        background: #2563eb !important;
+        color: white !important;
+        font-weight: 800 !important;
+        font-size: 14px !important;
+        padding: 12px 20px !important;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25) !important;
+        transition: all 0.2s ease !important;
+        border: none !important;
+    }
+    div[data-testid="stButton"] button:hover {
+        background: #1d4ed8 !important;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35) !important;
+    }
+
+    /* HỆ SINH THÁI VIETAPPS CARDS */
+    .vt-eco-section {
+        margin-top: 32px;
+        border-top: 1px solid #e2e8f0;
+        padding-top: 24px;
+    }
+    .vt-eco-title {
+        font-size: 14px;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .vt-eco-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+    }
+    @media (max-width: 640px) {
+        .vt-eco-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    .vt-eco-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 12px 14px;
+        text-decoration: none !important;
+        display: block;
+        transition: all 0.2s ease;
+    }
+    .vt-eco-card:hover {
+        background: #ffffff;
+        border-color: #93c5fd;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         transform: translateY(-2px);
     }
-    .vt-copyright {
+    .vt-eco-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 4px;
+    }
+    .vt-eco-app-name {
+        font-size: 13px;
+        font-weight: 800;
+        color: #0f172a;
+    }
+    .vt-eco-badge {
+        font-size: 9px;
+        font-weight: 800;
+        padding: 1px 6px;
+        border-radius: 6px;
+        background: #e2e8f0;
+        color: #475569;
+    }
+    .vt-eco-badge-active {
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+    .vt-eco-app-desc {
+        font-size: 11px;
+        color: #64748b;
+        line-height: 1.4;
+    }
+
+    /* FOOTER ĐỒNG BỘ */
+    .vt-footer {
+        margin-top: 36px;
+        border-top: 1px solid #e2e8f0;
+        padding: 20px 0 10px 0;
+        text-align: center;
+    }
+    .vt-socials-container {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 14px;
+    }
+    .vt-social-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 12px;
+        border-radius: 9999px;
+        color: white !important;
         font-size: 12px;
+        font-weight: 600;
+        text-decoration: none !important;
+        transition: opacity 0.2s;
+    }
+    .vt-social-pill:hover {
+        opacity: 0.88;
+    }
+    .vt-footer-text {
+        font-size: 11.5px;
         color: #94a3b8;
     }
 </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 3. HEADER GIAO DIỆN CHÍNH
+# 3. RENDER NAVBAR ĐỒNG BỘ VIFIX
 # ==========================================
 st.markdown(f"""
-<div class="vt-header">
-    <h1 class="vt-logo">🎓 {CFG['brand_name']}</h1>
-    <div class="vt-tagline">{CFG['tagline']}</div>
-    <div class="vt-nav">
-        <span class="vt-nav-item-active">📚 Tải SGV / SBT NXBGD</span>
-        <span class="vt-nav-item-upcoming">🤖 Soạn đề & bài giảng AI (Sắp ra mắt)</span>
+<div class="vt-navbar">
+    <div class="vt-brand-group">
+        <div class="vt-brand-icon">📚</div>
+        <div>
+            <span class="vt-brand-text">{CFG['app_name']}</span>
+            <span class="vt-badge-pro">{CFG['badge']}</span>
+        </div>
+    </div>
+    <div class="vt-nav-tools">
+        <a href="https://vifix.vercel.app/" target="_blank" class="vt-eco-btn" title="Chuyển sang ứng dụng viFix">🔧 viFix</a>
+        <div class="vt-version-tag">
+            <span class="vt-pulse-dot"></span>
+            <span>{CFG['version']}</span>
+        </div>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 4. CHỨC NĂNG TẢI SÁCH
+# 4. RENDER HERO SECTION
 # ==========================================
-with st.expander("💡 Hướng dẫn nhanh cho Thầy/Cô", expanded=False):
-    st.markdown("""
-    1. Truy cập trang đọc sách: **[taphuan.nxbgd.vn](https://taphuan.nxbgd.vn)**
-    2. Tìm cuốn sách muốn tải (Sách giáo viên, Sách bài tập, Chuyên đề,...).
-    3. Sao chép đường link trên thanh địa chỉ (Dạng: `https://taphuan.nxbgd.vn/tap-huan/doc-sach/...`).
-    4. Dán vào ô bên dưới và bấm nút **Bắt đầu tải**.
+st.markdown(f"""
+<div class="vt-hero">
+    <div class="vt-pill-badge">
+        <span>✨ {CFG['tagline']}</span>
+    </div>
+    <h1 class="vt-title">
+        Tiện ích Giáo dục <br>
+        <span class="vt-gradient-text">và Tải Sách NXBGD</span>
+    </h1>
+    <p class="vt-desc">{CFG['app_desc']}</p>
+</div>
+""", unsafe_allow_html=True)
+
+# ==========================================
+# 5. RENDER 3 BƯỚC HƯỚNG DẪN (HIỂN THỊ TRỰC QUAN)
+# ==========================================
+steps_html = []
+for stp in CFG["guide_steps"]:
+    steps_html.append(f"""
+    <div class="vt-step-card">
+        <div class="vt-step-header">
+            <span class="vt-step-number">{stp['number']}</span>
+            <span class="vt-step-title">{stp['title']}</span>
+        </div>
+        <div class="vt-step-desc">{stp['desc']}</div>
+    </div>
     """)
 
-url = st.text_input(
-    "🔗 Liên kết sách cần tải:",
-    placeholder="https://taphuan.nxbgd.vn/tap-huan/doc-sach/sgv-tin-hoc-12.4926897532"
-)
+st.markdown(f"""
+<div class="vt-guide-container">
+    {''.join(steps_html)}
+</div>
+""", unsafe_allow_html=True)
 
+# ==========================================
+# 6. KHUNG CHỨC NĂNG TẢI SÁCH CHÍNH
+# ==========================================
 def fetch_book_info(book_url):
     headers = {"User-Agent": "Mozilla/5.0"}
     res = requests.get(book_url, headers=headers, verify=False, timeout=15)
@@ -218,23 +524,28 @@ def fetch_book_info(book_url):
 
     return clean_title, page_urls
 
-if st.button("🚀 Bắt đầu tải sách", type="primary", use_container_width=True):
+url = st.text_input(
+    "Liên kết sách cần tải (từ taphuan.nxbgd.vn):",
+    placeholder="https://taphuan.nxbgd.vn/tap-huan/doc-sach/sgv-tin-hoc-12.4926897532"
+)
+
+if st.button("🚀 Bắt đầu tải sách PDF", type="primary", use_container_width=True):
     if not url or "taphuan.nxbgd.vn" not in url or "doc-sach" not in url:
-        st.error("⚠️ Đường link chưa đúng định dạng. Vui lòng nhập link sách từ taphuan.nxbgd.vn")
+        st.error("⚠️ Liên kết chưa chính xác! Vui lòng nhập link dạng: https://taphuan.nxbgd.vn/tap-huan/doc-sach/...")
     else:
         info_box = st.empty()
         progress_bar = st.progress(0)
         status_text = st.empty()
 
-        info_box.info("🔍 Đang kết nối lấy dữ liệu sách...")
+        info_box.info("🔍 Đang kết nối máy chủ để kiểm tra tài liệu...")
 
         try:
             title, page_urls = fetch_book_info(url)
             if not page_urls:
-                info_box.error("❌ Không tìm thấy các trang sách. Vui lòng kiểm tra lại link!")
+                info_box.error("❌ Không tìm thấy dữ liệu trang sách. Hãy đảm bảo sách mở được trên web!")
             else:
                 total_pages = len(page_urls)
-                info_box.success(f"📖 **{title}** (Tổng cộng: **{total_pages} trang**)")
+                info_box.success(f"📖 **{title}** — Đã tìm thấy **{total_pages} trang**")
 
                 headers = {"User-Agent": "Mozilla/5.0"}
 
@@ -252,20 +563,19 @@ if st.button("🚀 Bắt đầu tải sách", type="primary", use_container_widt
                 images = [None] * total_pages
                 completed = 0
 
-                # Tải đa luồng 6 trang để giữ máy chủ ổn định
                 with ThreadPoolExecutor(max_workers=6) as executor:
                     for idx, img in executor.map(download_single_page, enumerate(page_urls)):
                         images[idx] = img
                         completed += 1
                         pct = int((completed / total_pages) * 100)
                         progress_bar.progress(pct)
-                        status_text.markdown(f"📥 Đang tải: **{completed}/{total_pages}** trang ({pct}%)")
+                        status_text.markdown(f"📥 Tiến độ: **{completed}/{total_pages}** trang ({pct}%)")
 
-                status_text.markdown("⚙️ Đang đóng gói file PDF chất lượng cao...")
+                status_text.markdown("⚙️ Đang xuất file PDF chất lượng gốc...")
                 valid_images = [img for img in images if img is not None]
 
                 if not valid_images:
-                    st.error("❌ Không thể nạp trang ảnh sách.")
+                    st.error("❌ Lỗi xử lý hình ảnh.")
                 else:
                     pdf_buffer = BytesIO()
                     valid_images[0].save(
@@ -279,7 +589,7 @@ if st.button("🚀 Bắt đầu tải sách", type="primary", use_container_widt
 
                     status_text.empty()
                     st.balloons()
-                    st.success("🎉 **Đã hoàn tất đóng gói file PDF!**")
+                    st.success("🎉 **Hoàn thành đóng gói file PDF!**")
 
                     st.download_button(
                         label=f"📥 Tải xuống: {title}.pdf",
@@ -294,42 +604,53 @@ if st.button("🚀 Bắt đầu tải sách", type="primary", use_container_widt
             st.error(f"❌ Có lỗi phát sinh: {str(e)}")
 
 # ==========================================
-# 5. KHU VỰC MONETIZATION (DONATE NẾU BẬT)
+# 7. HỆ SINH THÁI VIETAPPS (ECOSYSTEM CARDS)
 # ==========================================
-if CFG["donate"]["enabled"]:
-    st.markdown("---")
-    donate = CFG["donate"]
-    st.markdown(f"""
-    <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; text-align: center;">
-        <h4 style="color: #1e293b; margin-bottom: 8px;">☕ {donate['message']}</h4>
-        <p style="color: #64748b; font-size: 14px; margin-bottom: 12px;">Ngân hàng: <b>{donate['bank_name']}</b> | STK: <b>{donate['account_number']}</b> ({donate['account_holder']})</p>
+eco_cards_html = []
+for app in CFG["ecosystem"]:
+    badge_cls = "vt-eco-badge-active" if app["badge"] in ["FREE", "PRO"] else "vt-eco-badge"
+    card_html = f"""
+    <a href="{app['url']}" target="_blank" class="vt-eco-card">
+        <div class="vt-eco-card-header">
+            <span class="vt-eco-app-name">{app['name']}</span>
+            <span class="{badge_cls}">{app['badge']}</span>
+        </div>
+        <div class="vt-eco-app-desc">{app['tagline']}</div>
+    </a>
+    """
+    eco_cards_html.append(card_html)
+
+st.markdown(f"""
+<div class="vt-eco-section">
+    <div class="vt-eco-title">
+        <span>🌐 Hệ sinh thái ứng dụng {CFG['master_name']}</span>
     </div>
-    """, unsafe_allow_html=True)
-    if donate.get("qr_image"):
-        st.image(donate["qr_image"], width=200)
+    <div class="vt-eco-grid">
+        {''.join(eco_cards_html)}
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 # ==========================================
-# 6. FOOTER CHUYÊN NGHIỆP (TỰ ĐỘNG TỪ XML)
+# 8. FOOTER VÀ KẾT NỐI MẠNG XÃ HỘI
 # ==========================================
-social_html_list = []
+social_pills = []
 for s in CFG["socials"]:
-    btn_html = f"""<a href="{s['url']}" target="_blank" class="vt-social-btn" style="background-color: {s['color']};">
+    pill = f"""<a href="{s['url']}" target="_blank" class="vt-social-pill" style="background-color: {s['color']};">
         <span>{s['name']}</span>
     </a>"""
-    social_html_list.append(btn_html)
-
-socials_joined = "\n".join(social_html_list)
+    social_pills.append(pill)
 
 st.markdown(f"""
 <div class="vt-footer">
-    <div style="font-size: 13px; color: #64748b; margin-bottom: 12px; font-weight: 600;">
-        KẾT NỐI VỚI CỘNG ĐỒNG {CFG['brand_name'].upper()}
+    <div style="font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 10px;">
+        KẾT NỐI VỚI CỘNG ĐỒNG {CFG['master_name'].upper()}
     </div>
-    <div class="vt-social-links">
-        {socials_joined}
+    <div class="vt-socials-container">
+        {''.join(social_pills)}
     </div>
-    <div class="vt-copyright">
-        {CFG['copyright']} • Hỗ trợ: <a href="mailto:{CFG['support_email']}" style="color: #64748b; text-decoration: none;">{CFG['support_email']}</a>
+    <div class="vt-footer-text">
+        {CFG['copyright']} • Email: {CFG['support_email']}
     </div>
 </div>
 """, unsafe_allow_html=True)
