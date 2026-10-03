@@ -6,7 +6,8 @@
         <appName>vietTeach</appName>
         <badge>FREE</badge>
         <tagline>Hệ sinh thái ứng dụng miễn phí phục vụ cộng đồng</tagline>
-        <appTitle>Tiện ích giáo dục và tải sách giáo viên</appTitle>
+        <appTitle>Tiện ích giáo dục</appTitle>
+        <heroTitle>Hỗ trợ thầy cô giáo tải sách điện tử</heroTitle>
         <appDescription>Hỗ trợ giáo viên tải trọn bộ sách giáo viên, sách bài tập và chuyên đề chất lượng gốc từ taphuan.nxbgd.vn hoàn toàn miễn phí.</appDescription>
         <copyright>© 2026 vietApps – Hệ sinh thái ứng dụng miễn phí</copyright>
         <supportEmail>hotro@vietapps.vn</supportEmail>
@@ -17,8 +18,8 @@
     <ecosystem>
         <app id="viTeach">
             <name>vietTeach</name>
-            <badge>Đang sử dụng</badge>
-            <badgeColor>#10b981</badgeColor>
+            <badge>Miễn phí</badge>
+            <badgeColor>#2563eb</badgeColor>
             <tagline>Tiện ích giáo dục và tải sách giáo viên</tagline>
             <description>Hỗ trợ giáo viên tải trọn bộ sách giáo viên, sách bài tập và chuyên đề chất lượng gốc từ taphuan.nxbgd.vn hoàn toàn miễn phí, nhanh chóng và tiện lợi.</description>
             <url>#</url>
@@ -80,7 +81,7 @@
             <number>2</number>
             <title>Sao chép địa chỉ</title>
             <desc>Copy đường link trên thanh địa chỉ của trình duyệt.</desc>
-            <example>Ví dụ: taphuan.nxbgd.vn/tap-huan/doc-sach/sgv-tin-hoc-12.4926897532</example>
+            <example>Ví dụ: https://taphuan.nxbgd.vn/tap-huan/doc-sach/sgv-tin-hoc-12.4926897532</example>
         </step>
         <step>
             <number>3</number>

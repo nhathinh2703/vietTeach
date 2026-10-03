@@ -24,7 +24,8 @@ def load_config(xml_path="config.xml"):
         "app_name": "vietTeach",
         "badge": "FREE",
         "tagline": "Hệ sinh thái ứng dụng miễn phí phục vụ cộng đồng",
-        "app_title": "Tiện ích giáo dục và tải sách giáo viên",
+        "app_title": "Tiện ích giáo dục",
+        "hero_title": "Hỗ trợ thầy cô giáo tải sách điện tử",
         "app_desc": "Hỗ trợ giáo viên tải trọn bộ sách giáo viên, sách bài tập và chuyên đề từ taphuan.nxbgd.vn hoàn toàn miễn phí.",
         "copyright": "© 2026 vietApps – Hệ sinh thái ứng dụng miễn phí",
         "support_email": "hotro@vietapps.vn",
@@ -47,6 +48,7 @@ def load_config(xml_path="config.xml"):
             config["badge"] = brand.findtext("badge", config["badge"])
             config["tagline"] = brand.findtext("tagline", config["tagline"])
             config["app_title"] = brand.findtext("appTitle", config["app_title"])
+            config["hero_title"] = brand.findtext("heroTitle", config.get("hero_title", "Hỗ trợ thầy cô giáo tải sách điện tử"))
             config["app_desc"] = brand.findtext("appDescription", config["app_desc"])
             config["copyright"] = brand.findtext("copyright", config["copyright"])
             config["support_email"] = brand.findtext("supportEmail", config["support_email"])
@@ -459,7 +461,7 @@ render_html(f"""
         </div>
     </div>
     <div class="vt-nav-tagline">
-        Hệ sinh thái ứng dụng miễn phí {CFG['master_name']}
+        {CFG['app_title']}
     </div>
 </div>
 """)
@@ -473,8 +475,7 @@ with col_left:
     render_html(f"""
     <div class="vt-hero-pill">✨ {CFG['tagline']}</div>
     <h1 class="vt-hero-h1">
-        Tiện ích giáo dục <br>
-        <span class="vt-gradient-clip">và tải sách giáo viên</span>
+        {CFG['hero_title']}
     </h1>
     <p class="vt-hero-p">{CFG['app_desc']}</p>
     """)
@@ -632,7 +633,7 @@ for app in CFG["ecosystem"]:
     if is_current:
         action_btn_html = """
         <div class="vt-app-item-btn-current">
-            Đang mở
+            Đang sử dụng
         </div>
         """
     else:
