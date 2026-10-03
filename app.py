@@ -104,9 +104,12 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Khởi tạo session_state cho ô nhập link sách
+# Đồng bộ link từ query param (nếu người dùng bấm link mẫu hoặc mở từ chia sẻ)
+query_url = st.query_params.get("url", "")
 if "book_url" not in st.session_state:
-    st.session_state["book_url"] = ""
+    st.session_state["book_url"] = query_url if query_url else ""
+elif query_url and st.session_state["book_url"] != query_url:
+    st.session_state["book_url"] = query_url
 
 # Custom CSS phong cách viFix với các nút tiện ích gọn gàng
 render_html("""
@@ -251,42 +254,45 @@ render_html("""
         flex: 1;
     }
 
-    /* KHUNG VÍ DỤ KÈM ICON COPY NHẸ NHÀNG */
+    /* LINK MẪU VÀ ICON COPY GỌN GÀNG */
     .vt-example-container {
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        gap: 8px;
+        gap: 6px;
         margin-top: 6px;
         background: #f0f9ff;
         border: 1px solid #bae6fd;
         border-radius: 8px;
-        padding: 6px 10px;
+        padding: 5px 8px;
     }
-    .vt-example-text {
-        font-size: 12px;
+    .vt-example-link-clickable {
+        font-size: 11.5px;
         color: #0369a1;
         font-family: ui-monospace, monospace;
         word-break: break-all;
+        text-decoration: none;
         flex: 1;
+        line-height: 1.35;
     }
-    .vt-btn-icon-copy {
-        background: transparent;
-        border: none;
+    .vt-example-link-clickable:hover {
         color: #0284c7;
-        font-size: 14px;
+        text-decoration: underline;
+    }
+    .vt-copy-icon-link {
+        font-size: 13px;
+        text-decoration: none !important;
         cursor: pointer;
-        padding: 2px 6px;
-        border-radius: 4px;
-        transition: all 0.2s;
+        opacity: 0.8;
+        transition: transform 0.15s, opacity 0.15s;
         display: inline-flex;
         align-items: center;
-        justify-content: center;
+        padding: 2px 4px;
+        border-radius: 4px;
     }
-    .vt-btn-icon-copy:hover {
+    .vt-copy-icon-link:hover {
+        opacity: 1;
+        transform: scale(1.15);
         background: #e0f2fe;
-        color: #0369a1;
-        transform: scale(1.1);
     }
 
     /* CỘT PHẢI: CARD TẢI SÁCH */
@@ -294,49 +300,62 @@ render_html("""
         font-size: 17px;
         font-weight: 800;
         color: #0f172a;
-        margin-bottom: 12px;
+        margin-bottom: 8px;
         display: flex;
         align-items: center;
         gap: 8px;
     }
 
-    /* THANH TOOLBAR ICON NHỎ GỌN TRÊN Ô NHẬP */
-    .vt-input-toolbar-subtle {
+    /* THANH TOOLBAR TIỆN ÍCH TRÊN Ô NHẬP LIÊN KẾT */
+    .vt-toolbar-container {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-bottom: 6px;
+        margin-bottom: 4px;
     }
-    .vt-input-title-label {
+    .vt-toolbar-label {
         font-size: 13.5px;
         font-weight: 700;
         color: #334155;
     }
-    .vt-actions-subtle {
-        display: flex;
-        gap: 6px;
+
+    /* Tinh chỉnh nút nhỏ gọn thanh lịch trong toolbar */
+    button[data-testid="stBaseButton-secondary"]:has(p:contains("Dùng mẫu")),
+    button[data-testid="stBaseButton-secondary"]:has(p:contains("Xóa")),
+    div[data-testid="column"]:has(button[key="btn_use_sample"]) button,
+    div[data-testid="column"]:has(button[key="btn_clear_input"]) button,
+    div.row-widget.stButton button {
+        height: 30px !important;
+        min-height: 30px !important;
+        padding: 2px 10px !important;
+        font-size: 12.5px !important;
+        font-weight: 600 !important;
+        border-radius: 7px !important;
+        background: #f8fafc !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #475569 !important;
+        line-height: 1.2 !important;
+        box-shadow: none !important;
     }
-    .vt-btn-icon-subtle {
-        background: #f1f5f9;
-        border: 1px solid #e2e8f0;
-        border-radius: 6px;
-        color: #475569;
-        font-size: 12px;
-        padding: 3px 8px;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.15s ease;
+    div.row-widget.stButton button:hover {
+        background: #f1f5f9 !important;
+        border-color: #94a3b8 !important;
+        color: #0f172a !important;
     }
-    .vt-btn-icon-subtle:hover {
-        background: #e2e8f0;
-        color: #1e293b;
+    div.row-widget.stButton button:active {
+        background: #e2e8f0 !important;
     }
-    .vt-btn-clear-subtle:hover {
-        background: #fee2e2;
-        border-color: #fca5a5;
-        color: #ef4444;
+    /* Riêng nút tải sách chính luôn to, nổi bật và đẹp */
+    div[data-testid="stButton"] button[kind="primary"],
+    button[data-testid="stBaseButton-primary"] {
+        height: 44px !important;
+        min-height: 44px !important;
+        font-size: 15px !important;
+        border-radius: 11px !important;
+        font-weight: 700 !important;
+        background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
+        border: none !important;
+        color: #ffffff !important;
     }
 
     div[data-testid="stTextInput"] {
@@ -505,21 +524,20 @@ with col_left:
 
     # 3 Bước hướng dẫn hiển thị liền mạch, tinh tế
     steps_html = []
+    sample_target_url = "https://taphuan.nxbgd.vn/tap-huan/doc-sach/sgv-tin-hoc-12.4926897532"
     for stp in CFG["guide_steps"]:
         ex_box = ""
         if stp.get("example"):
-            # Trích xuất URL sách mẫu
             raw_ex = stp['example']
             m = re.search(r'https?://[^\s]+', raw_ex)
             target_url = m.group(0) if m else raw_ex
+            sample_target_url = target_url
             clean_display = raw_ex.replace("Ví dụ: ", "").strip()
             
             ex_box = f"""
             <div class="vt-example-container">
-                <span class="vt-example-text" id="vt-sample-link" title="{clean_display}">{clean_display}</span>
-                <button type="button" class="vt-btn-icon-copy" title="Sao chép liên kết mẫu" onclick="copySampleLink('{target_url}')">
-                    📋
-                </button>
+                <a href="?url={target_url}" class="vt-example-link-clickable" title="Nhấn để tự động điền link mẫu này">{clean_display}</a>
+                <a href="?url={target_url}" class="vt-copy-icon-link" title="Nhấn để tự động điền link mẫu này">📋</a>
             </div>
             """
         steps_html.append(f"""
@@ -546,20 +564,22 @@ with col_right:
     <div class="vt-card-header">
         <span>⚡ Tải sách giáo viên / sách bài tập</span>
     </div>
-    <div class="vt-input-toolbar-subtle">
-        <span class="vt-input-title-label">Nhập liên kết sách:</span>
-        <div class="vt-actions-subtle">
-            <button type="button" class="vt-btn-icon-subtle" title="Dán từ bộ nhớ tạm" onclick="handlePasteAction()">
-                📋 Dán
-            </button>
-            <button type="button" class="vt-btn-icon-subtle vt-btn-clear-subtle" title="Xóa ô nhập" onclick="handleClearAction()">
-                ✕ Xóa
-            </button>
-        </div>
-    </div>
     """)
 
-    # Ô nhập link với placeholder trang nhã
+    # Thanh công cụ chứa nhãn và các nút tiện ích thao tác tức thì
+    tb_left, tb_btn1, tb_btn2 = st.columns([5.2, 2.6, 1.4], gap="small")
+    with tb_left:
+        render_html('<div class="vt-toolbar-label" style="line-height:28px;">Nhập liên kết sách:</div>')
+    with tb_btn1:
+        if st.button("📋 Dùng mẫu", key="btn_use_sample", help="Điền liên kết sách mẫu"):
+            st.session_state["book_url"] = sample_target_url
+            st.rerun()
+    with tb_btn2:
+        if st.button("✕ Xóa", key="btn_clear_input", help="Xóa ô nhập"):
+            st.session_state["book_url"] = ""
+            st.rerun()
+
+    # Ô nhập link đồng bộ hoàn toàn với session_state["book_url"]
     url = st.text_input(
         "Nhập liên kết sách:",
         value=st.session_state["book_url"],
@@ -719,102 +739,3 @@ render_html(f"""
 </div>
 """)
 
-# ==========================================
-# 7. CLIENT-SIDE SCRIPT: XỬ LÝ COPY MẪU, DÁN VÀ XÓA Ô NHẬP
-# ==========================================
-st.html("""
-<script>
-(function() {
-    // Hàm tìm ô input chính xác xuyên qua shadow DOM/iframe nếu có
-    function getTargetInput() {
-        // Tìm ô input bên trong container của stTextInput
-        const el = document.querySelector('div[data-testid="stTextInput"] input') || 
-                   document.querySelector('input[type="text"]');
-        return el;
-    }
-
-    // Đặt giá trị và kích hoạt đầy đủ sự kiện React / Streamlit
-    window.setStreamlitInputValue = function(val) {
-        const input = getTargetInput();
-        if (!input) return;
-
-        // Dùng descriptor native để kích hoạt setter React
-        const proto = window.HTMLInputElement.prototype;
-        const nativeSetter = Object.getOwnPropertyDescriptor(proto, "value").set;
-        nativeSetter.call(input, val);
-
-        // Phát chuỗi sự kiện để Streamlit bắt nhận giá trị
-        input.dispatchEvent(new Event('input', { bubbles: true }));
-        input.dispatchEvent(new Event('change', { bubbles: true }));
-        input.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Enter' }));
-        input.focus();
-    };
-
-    // Toast thông báo nhỏ góc màn hình
-    window.showToastNotice = function(msg) {
-        let toast = document.getElementById('vt-custom-toast');
-        if (!toast) {
-            toast = document.createElement('div');
-            toast.id = 'vt-custom-toast';
-            toast.style = 'position:fixed;bottom:20px;right:20px;z-index:999999;background:#0f172a;color:#ffffff;padding:8px 16px;border-radius:8px;font-size:12.5px;font-weight:600;box-shadow:0 8px 20px rgba(0,0,0,0.25);transition:opacity 0.25s ease;pointer-events:none;';
-            document.body.appendChild(toast);
-        }
-        toast.innerText = msg;
-        toast.style.opacity = '1';
-        toast.style.display = 'block';
-        clearTimeout(window.__toastTimer);
-        window.__toastTimer = setTimeout(() => {
-            toast.style.opacity = '0';
-            setTimeout(() => toast.style.display = 'none', 250);
-        }, 2200);
-    };
-
-    // 1. Sao chép link mẫu và tự động điền vào ô
-    window.copySampleLink = function(url) {
-        const link = url || "https://taphuan.nxbgd.vn/tap-huan/doc-sach/sgv-tin-hoc-12.4926897532";
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(link).then(() => {
-                window.setStreamlitInputValue(link);
-                window.showToastNotice("📋 Đã sao chép & tự động điền link mẫu!");
-            }).catch(() => {
-                window.setStreamlitInputValue(link);
-                window.showToastNotice("✅ Đã điền link mẫu vào ô!");
-            });
-        } else {
-            window.setStreamlitInputValue(link);
-            window.showToastNotice("✅ Đã điền link mẫu vào ô!");
-        }
-    };
-
-    // 2. Dán từ bộ nhớ tạm
-    window.handlePasteAction = async function() {
-        const input = getTargetInput();
-        if (navigator.clipboard && navigator.clipboard.readText) {
-            try {
-                const text = await navigator.clipboard.readText();
-                if (text && text.trim().length > 0) {
-                    window.setStreamlitInputValue(text.trim());
-                    window.showToastNotice("📋 Đã dán link vào ô!");
-                    return;
-                }
-            } catch (err) {
-                // Trình duyệt hỏi quyền hoặc từ chối
-            }
-        }
-        if (input) {
-            input.focus();
-            input.select();
-            window.showToastNotice("💡 Vui lòng nhấn Ctrl + V để dán!");
-        }
-    };
-
-    // 3. Xóa nội dung trong ô
-    window.handleClearAction = function() {
-        window.setStreamlitInputValue("");
-        const input = getTargetInput();
-        if (input) input.focus();
-        window.showToastNotice("✕ Đã xóa ô nhập!");
-    };
-})();
-</script>
-""", unsafe_allow_javascript=True)
