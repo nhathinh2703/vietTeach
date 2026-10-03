@@ -9,8 +9,8 @@
         <appTitle>Tiện ích giáo dục</appTitle>
         <heroTitle>Hỗ trợ thầy cô giáo tải sách điện tử</heroTitle>
         <appDescription>Hỗ trợ giáo viên tải trọn bộ sách giáo viên, sách bài tập và chuyên đề chất lượng gốc từ taphuan.nxbgd.vn hoàn toàn miễn phí.</appDescription>
-        <copyright>© 2026 vietApps – Hệ sinh thái ứng dụng miễn phí</copyright>
-        <supportEmail>hotro@vietapps.vn</supportEmail>
+        <copyright>© 2026 vietApps • viteach – Tải sách điện tử</copyright>
+        <supportEmail>vietapps.official@gmail.com</supportEmail>
         <connectMessage>Kết nối với chúng tôi để xem hướng dẫn và sử dụng các tiện ích miễn phí</connectMessage>
     </brand>
 
@@ -39,7 +39,7 @@
     <!-- KẾT NỐI MẠNG XÃ HỘI -->
     <socials>
         <social id="zalo">
-            <name>Nhóm Zalo</name>
+            <name>Zalo Group</name>
             <enabled>true</enabled>
             <url>https://zalo.me/g/lapbvhp0mku5bvgle0a1</url>
             <color>#0068FF</color>
