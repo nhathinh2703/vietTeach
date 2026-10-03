@@ -64,8 +64,8 @@
         </social>
         <social id="tiktok">
             <name>TikTok</name>
-            <enabled>false</enabled>
-            <url>#</url>
+            <enabled>true</enabled>
+            <url>https://www.tiktok.com/@vietapps.official</url>
             <color>#000000</color>
         </social>
     </socials>
