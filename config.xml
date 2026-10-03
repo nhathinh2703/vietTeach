@@ -1,45 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <vietAppsConfig>
-    <!-- Thông tin thương hiệu Hệ sinh thái vietApps -->
+    <!-- THÔNG TIN THƯƠNG HIỆU -->
     <brand>
         <masterName>vietApps</masterName>
-        <appName>viTeach</appName>
+        <appName>vietTeach</appName>
         <badge>FREE</badge>
-        <version>v1.0.2</version>
         <tagline>Hệ sinh thái ứng dụng miễn phí phục vụ cộng đồng</tagline>
         <appTitle>Tiện ích Giáo dục &amp; Tải Sách NXBGD</appTitle>
-        <appDescription>Tải trọn bộ Sách Giáo Viên, Sách Bài Tập và Chuyên đề chất lượng gốc từ taphuan.nxbgd.vn hoàn toàn miễn phí.</appDescription>
+        <appDescription>Hỗ trợ giáo viên tải trọn bộ Sách Giáo Viên, Sách Bài Tập và Chuyên đề chất lượng gốc từ taphuan.nxbgd.vn hoàn toàn miễn phí.</appDescription>
         <copyright>© 2026 vietApps – Hệ sinh thái ứng dụng miễn phí</copyright>
         <supportEmail>hotro@vietapps.vn</supportEmail>
     </brand>
 
-    <!-- Hệ sinh thái các ứng dụng trong vietApps -->
+    <!-- HỆ SINH THÁI CÁC ỨNG DỤNG (Có mô tả đầy đủ công năng của từng app) -->
     <ecosystem>
+        <app id="vietTeach">
+            <name>vietTeach</name>
+            <badge>Đang sử dụng</badge>
+            <badgeColor>#10b981</badgeColor>
+            <description>Tiện ích giáo dục: Tải trọn bộ SGV, SBT, Chuyên đề NXBGD chất lượng gốc miễn phí.</description>
+            <url>#</url>
+            <icon>📚</icon>
+        </app>
         <app id="vifix">
             <name>viFix</name>
-            <badge>PRO</badge>
-            <tagline>Quản lý sửa chữa và bảo hành điện tử</tagline>
+            <badge>Miễn phí</badge>
+            <badgeColor>#2563eb</badgeColor>
+            <description>Quản lý sửa chữa: Quản lý phiếu nhận, tạo mã QR bảo hành điện tử và theo dõi thu chi.</description>
             <url>https://vifix.vercel.app/</url>
-            <icon>wrench</icon>
-        </app>
-        <app id="viteach">
-            <name>viTeach</name>
-            <badge>FREE</badge>
-            <tagline>Tiện ích giáo dục &amp; Tải sách giáo viên</tagline>
-            <url>#</url>
-            <icon>book</icon>
+            <icon>🔧</icon>
         </app>
         <app id="viexam">
             <name>viExam AI</name>
-            <badge>SẮP RA MẮT</badge>
-            <tagline>Soạn đề thi &amp; giáo án thông minh</tagline>
+            <badge>Sắp ra mắt</badge>
+            <badgeColor>#64748b</badgeColor>
+            <description>Trợ lý khảo thí AI: Tự động sinh đề kiểm tra, ma trận đề và gợi ý bài giảng thông minh.</description>
             <url>#</url>
-            <icon>sparkles</icon>
+            <icon>🤖</icon>
         </app>
     </ecosystem>
 
-    <!-- Các kênh mạng xã hội & cộng đồng vietApps - Free -->
-    <!-- Thầy/Cô chỉ cần điền link khi tạo xong nhóm/kênh, hoặc đặt enabled="false" nếu chưa dùng -->
+    <!-- KẾT NỐI MẠNG XÃ HỘI -->
     <socials>
         <social id="zalo">
             <name>Nhóm Zalo</name>
@@ -73,22 +74,22 @@
         </social>
     </socials>
 
-    <!-- 3 bước hướng dẫn sử dụng hiển thị trực quan trên giao diện -->
+    <!-- HƯỚNG DẪN 3 BƯỚC HIỂN THỊ TRỰC TIẾP TRÊN WEB -->
     <guideSteps>
         <step>
             <number>1</number>
             <title>Lấy link sách</title>
-            <desc>Vào &lt;a href='https://taphuan.nxbgd.vn' target='_blank' style='color:#2563eb;font-weight:700;'&gt;taphuan.nxbgd.vn&lt;/a&gt;, chọn cuốn SGV hoặc SBT cần tải.</desc>
+            <desc>Vào taphuan.nxbgd.vn, mở cuốn Sách Giáo Viên hoặc Sách Bài Tập cần tải.</desc>
         </step>
         <step>
             <number>2</number>
             <title>Sao chép địa chỉ</title>
-            <desc>Copy đường link trên thanh trình duyệt (dạng &lt;code style='color:#0369a1;'&gt;/doc-sach/...&lt;/code&gt;).</desc>
+            <desc>Copy toàn bộ đường link trên thanh địa chỉ trình duyệt (dạng /doc-sach/...).</desc>
         </step>
         <step>
             <number>3</number>
             <title>Tải file PDF</title>
-            <desc>Dán link vào ô bên dưới, bấm &lt;b&gt;Bắt đầu tải sách&lt;/b&gt; và nhận file PDF gốc.</desc>
+            <desc>Dán link vào ô bên phải và bấm "Bắt đầu tải sách PDF" để lưu về máy.</desc>
         </step>
     </guideSteps>
 </vietAppsConfig>
