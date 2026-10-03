@@ -6,37 +6,23 @@
         <appName>vietTeach</appName>
         <badge>FREE</badge>
         <tagline>Hệ sinh thái ứng dụng miễn phí phục vụ cộng đồng</tagline>
-        <appTitle>Tiện ích Giáo dục &amp; Tải Sách NXBGD</appTitle>
-        <appDescription>Hỗ trợ giáo viên tải trọn bộ Sách Giáo Viên, Sách Bài Tập và Chuyên đề chất lượng gốc từ taphuan.nxbgd.vn hoàn toàn miễn phí.</appDescription>
+        <appTitle>Tiện ích giáo dục và tải sách giáo viên</appTitle>
+        <appDescription>Hỗ trợ giáo viên tải trọn bộ sách giáo viên, sách bài tập và chuyên đề chất lượng gốc từ taphuan.nxbgd.vn hoàn toàn miễn phí.</appDescription>
         <copyright>© 2026 vietApps – Hệ sinh thái ứng dụng miễn phí</copyright>
         <supportEmail>hotro@vietapps.vn</supportEmail>
+        <connectMessage>Kết nối với chúng tôi để xem hướng dẫn và sử dụng các tiện ích miễn phí</connectMessage>
     </brand>
 
-    <!-- HỆ SINH THÁI CÁC ỨNG DỤNG (Có mô tả đầy đủ công năng của từng app) -->
+    <!-- HỆ SINH THÁI CÁC ỨNG DỤNG KHÁC (Chỉ hiển thị viFix) -->
     <ecosystem>
-        <app id="vietTeach">
-            <name>vietTeach</name>
-            <badge>Đang sử dụng</badge>
-            <badgeColor>#10b981</badgeColor>
-            <description>Tiện ích giáo dục: Tải trọn bộ SGV, SBT, Chuyên đề NXBGD chất lượng gốc miễn phí.</description>
-            <url>#</url>
-            <icon>📚</icon>
-        </app>
         <app id="vifix">
             <name>viFix</name>
             <badge>Miễn phí</badge>
             <badgeColor>#2563eb</badgeColor>
-            <description>Quản lý sửa chữa: Quản lý phiếu nhận, tạo mã QR bảo hành điện tử và theo dõi thu chi.</description>
+            <tagline>Quản lý sửa chữa và bảo hành điện tử</tagline>
+            <description>Công cụ cần thiết cho cửa hàng sửa chữa và kỹ thuật viên: Tạo phiếu nhận máy, theo dõi chi phí, tạo thẻ bảo hành điện tử QR, nhắc hẹn khách hàng và theo dõi doanh thu trên nhiều thiết bị.</description>
             <url>https://vifix.vercel.app/</url>
             <icon>🔧</icon>
-        </app>
-        <app id="viexam">
-            <name>viExam AI</name>
-            <badge>Sắp ra mắt</badge>
-            <badgeColor>#64748b</badgeColor>
-            <description>Trợ lý khảo thí AI: Tự động sinh đề kiểm tra, ma trận đề và gợi ý bài giảng thông minh.</description>
-            <url>#</url>
-            <icon>🤖</icon>
         </app>
     </ecosystem>
 
@@ -74,17 +60,18 @@
         </social>
     </socials>
 
-    <!-- HƯỚNG DẪN 3 BƯỚC HIỂN THỊ TRỰC TIẾP TRÊN WEB -->
+    <!-- HƯỚNG DẪN 3 BƯỚC -->
     <guideSteps>
         <step>
             <number>1</number>
             <title>Lấy link sách</title>
-            <desc>Vào taphuan.nxbgd.vn, mở cuốn Sách Giáo Viên hoặc Sách Bài Tập cần tải.</desc>
+            <desc>Truy cập vào trang tập huấn &lt;a href="https://taphuan.nxbgd.vn" target="_blank" style="color:#2563eb;font-weight:700;text-decoration:underline;"&gt;taphuan.nxbgd.vn ↗&lt;/a&gt;, mở cuốn sách giáo viên hoặc sách bài tập cần tải.</desc>
         </step>
         <step>
             <number>2</number>
             <title>Sao chép địa chỉ</title>
-            <desc>Copy toàn bộ đường link trên thanh địa chỉ trình duyệt (dạng /doc-sach/...).</desc>
+            <desc>Copy đường link trên thanh địa chỉ của trình duyệt.</desc>
+            <example>Ví dụ: taphuan.nxbgd.vn/tap-huan/doc-sach/sgv-tin-hoc-12.4926897532</example>
         </step>
         <step>
             <number>3</number>

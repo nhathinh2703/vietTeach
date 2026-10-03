@@ -10,7 +10,7 @@ import xml.etree.ElementTree as ET
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-# Hàm render HTML an toàn, loại bỏ thụt lề để tránh lỗi Markdown
+# Hàm render HTML an toàn, loại bỏ thụt lề để tránh lỗi Markdown code block
 def render_html(html_str):
     cleaned = "\n".join(line.strip() for line in html_str.strip().splitlines())
     st.markdown(cleaned, unsafe_allow_html=True)
@@ -24,10 +24,11 @@ def load_config(xml_path="config.xml"):
         "app_name": "vietTeach",
         "badge": "FREE",
         "tagline": "Hệ sinh thái ứng dụng miễn phí phục vụ cộng đồng",
-        "app_title": "Tiện ích Giáo dục & Tải Sách NXBGD",
-        "app_desc": "Hỗ trợ giáo viên tải trọn bộ Sách Giáo Viên, Sách Bài Tập và Chuyên đề từ taphuan.nxbgd.vn hoàn toàn miễn phí.",
+        "app_title": "Tiện ích giáo dục và tải sách giáo viên",
+        "app_desc": "Hỗ trợ giáo viên tải trọn bộ sách giáo viên, sách bài tập và chuyên đề từ taphuan.nxbgd.vn hoàn toàn miễn phí.",
         "copyright": "© 2026 vietApps – Hệ sinh thái ứng dụng miễn phí",
         "support_email": "hotro@vietapps.vn",
+        "connect_message": "Kết nối với chúng tôi để xem hướng dẫn và sử dụng các tiện ích miễn phí",
         "ecosystem": [],
         "socials": [],
         "guide_steps": []
@@ -49,6 +50,7 @@ def load_config(xml_path="config.xml"):
             config["app_desc"] = brand.findtext("appDescription", config["app_desc"])
             config["copyright"] = brand.findtext("copyright", config["copyright"])
             config["support_email"] = brand.findtext("supportEmail", config["support_email"])
+            config["connect_message"] = brand.findtext("connectMessage", config["connect_message"])
 
         eco = root.find("ecosystem")
         if eco is not None:
@@ -58,6 +60,7 @@ def load_config(xml_path="config.xml"):
                     "name": item.findtext("name", ""),
                     "badge": item.findtext("badge", ""),
                     "badge_color": item.findtext("badgeColor", "#2563eb"),
+                    "tagline": item.findtext("tagline", ""),
                     "description": item.findtext("description", ""),
                     "url": item.findtext("url", "#"),
                     "icon": item.findtext("icon", "📦")
@@ -80,7 +83,8 @@ def load_config(xml_path="config.xml"):
                 config["guide_steps"].append({
                     "number": stp.findtext("number", "•"),
                     "title": stp.findtext("title", ""),
-                    "desc": stp.findtext("desc", "")
+                    "desc": stp.findtext("desc", ""),
+                    "example": stp.findtext("example", "")
                 })
 
     except Exception as e:
@@ -100,17 +104,17 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Custom CSS phong cách viFix
+# Custom CSS với cỡ chữ to rõ ràng, chuẩn viFix
 render_html("""
 <style>
-    /* Ẩn các thanh menu mặc định của Streamlit */
+    /* Ẩn bớt thanh menu mặc định của Streamlit */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
 
     /* Khung rộng 1200px chuẩn viFix */
     .block-container {
-        max-width: 1200px !important;
+        max-width: 1220px !important;
         padding-top: 1rem !important;
         padding-bottom: 0.8rem !important;
         padding-left: 1.5rem !important;
@@ -118,7 +122,7 @@ render_html("""
     }
 
     div[data-testid="stVerticalBlock"] {
-        gap: 0.6rem !important;
+        gap: 0.7rem !important;
     }
 
     /* NAVBAR */
@@ -126,32 +130,32 @@ render_html("""
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 10px 18px;
+        padding: 12px 20px;
         background: #ffffff;
         border: 1px solid #e2e8f0;
         border-radius: 16px;
         margin-bottom: 18px;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.03);
     }
     .vt-brand-left {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
     }
     .vt-brand-icon {
-        width: 34px;
-        height: 34px;
-        border-radius: 10px;
+        width: 38px;
+        height: 38px;
+        border-radius: 11px;
         background: linear-gradient(135deg, #2563eb, #4f46e5);
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
-        font-size: 16px;
+        font-size: 19px;
         box-shadow: 0 3px 8px rgba(37, 99, 235, 0.25);
     }
     .vt-brand-title {
-        font-size: 20px;
+        font-size: 22px;
         font-weight: 900;
         background: linear-gradient(90deg, #2563eb, #4f46e5);
         -webkit-background-clip: text;
@@ -159,55 +163,41 @@ render_html("""
         letter-spacing: -0.4px;
     }
     .vt-brand-badge {
-        font-size: 9px;
+        font-size: 10px;
         font-weight: 800;
-        padding: 2px 7px;
+        padding: 2px 8px;
         border-radius: 12px;
         background: #dbeafe;
         color: #1d4ed8;
         margin-left: 6px;
     }
-    .vt-nav-right {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    .vt-btn-link {
-        font-size: 11.5px;
-        font-weight: 700;
-        color: #2563eb;
-        background: #eff6ff;
-        border: 1px solid #bfdbfe;
-        padding: 5px 12px;
-        border-radius: 10px;
-        text-decoration: none !important;
-        transition: all 0.15s ease;
-    }
-    .vt-btn-link:hover {
-        background: #dbeafe;
+    .vt-nav-tagline {
+        font-size: 13px;
+        color: #64748b;
+        font-weight: 500;
     }
 
     /* CỘT TRÁI: TIÊU ĐỀ & HƯỚNG DẪN */
     .vt-hero-pill {
         display: inline-flex;
         align-items: center;
-        gap: 5px;
-        padding: 3px 11px;
+        gap: 6px;
+        padding: 4px 12px;
         border-radius: 9999px;
         background: #eff6ff;
         border: 1px solid #bfdbfe;
         color: #1d4ed8;
-        font-size: 11px;
+        font-size: 12.5px;
         font-weight: 700;
-        margin-bottom: 6px;
+        margin-bottom: 8px;
     }
     .vt-hero-h1 {
-        font-size: 26px;
+        font-size: 28px;
         font-weight: 900;
         color: #0f172a;
         line-height: 1.25;
         letter-spacing: -0.5px;
-        margin: 0 0 6px 0;
+        margin: 0 0 8px 0;
     }
     .vt-gradient-clip {
         background: linear-gradient(90deg, #2563eb, #4f46e5, #0891b2);
@@ -215,36 +205,36 @@ render_html("""
         -webkit-text-fill-color: transparent;
     }
     .vt-hero-p {
-        font-size: 13px;
-        color: #64748b;
-        line-height: 1.45;
-        margin-bottom: 12px;
+        font-size: 14.5px;
+        color: #475569;
+        line-height: 1.5;
+        margin-bottom: 14px;
     }
 
     /* KHUNG 3 BƯỚC HƯỚNG DẪN */
     .vt-steps-box {
         background: #f8fafc;
         border: 1px solid #e2e8f0;
-        border-radius: 14px;
-        padding: 12px 14px;
-        margin-bottom: 14px;
+        border-radius: 16px;
+        padding: 14px 16px;
+        margin-bottom: 16px;
     }
     .vt-step-row {
         display: flex;
         align-items: flex-start;
-        gap: 10px;
-        padding: 5px 0;
+        gap: 12px;
+        padding: 8px 0;
     }
     .vt-step-row:not(:last-child) {
         border-bottom: 1px dashed #e2e8f0;
     }
     .vt-num-badge {
-        width: 20px;
-        height: 20px;
-        border-radius: 6px;
+        width: 24px;
+        height: 24px;
+        border-radius: 7px;
         background: #2563eb;
         color: white;
-        font-size: 11px;
+        font-size: 12px;
         font-weight: 800;
         display: flex;
         align-items: center;
@@ -253,33 +243,44 @@ render_html("""
         margin-top: 1px;
     }
     .vt-step-content {
-        font-size: 12px;
+        font-size: 13.5px;
         color: #334155;
-        line-height: 1.45;
+        line-height: 1.5;
+    }
+    .vt-step-example {
+        font-size: 12px;
+        color: #0284c7;
+        background: #f0f9ff;
+        padding: 3px 8px;
+        border-radius: 6px;
+        margin-top: 4px;
+        display: inline-block;
+        word-break: break-all;
+        border: 1px solid #e0f2fe;
     }
 
     /* CỘT PHẢI: CARD TẢI SÁCH */
     .vt-card-header {
-        font-size: 15px;
+        font-size: 17px;
         font-weight: 800;
         color: #0f172a;
-        margin-bottom: 8px;
+        margin-bottom: 10px;
         display: flex;
         align-items: center;
-        gap: 7px;
+        gap: 8px;
     }
 
     div[data-testid="stTextInput"] label {
-        font-size: 12px !important;
+        font-size: 13.5px !important;
         font-weight: 700 !important;
-        color: #475569 !important;
-        margin-bottom: 2px !important;
+        color: #334155 !important;
+        margin-bottom: 3px !important;
     }
     div[data-testid="stTextInput"] input {
-        border-radius: 10px !important;
+        border-radius: 11px !important;
         border: 1px solid #cbd5e1 !important;
-        font-size: 12.5px !important;
-        padding: 9px 12px !important;
+        font-size: 14px !important;
+        padding: 10px 14px !important;
         background: #f8fafc !important;
     }
     div[data-testid="stTextInput"] input:focus {
@@ -288,85 +289,84 @@ render_html("""
         box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
     }
     div[data-testid="stButton"] button {
-        border-radius: 11px !important;
+        border-radius: 12px !important;
         background: #2563eb !important;
         color: white !important;
         font-weight: 800 !important;
-        font-size: 13.5px !important;
-        padding: 10px 18px !important;
-        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.22) !important;
+        font-size: 15px !important;
+        padding: 11px 20px !important;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.22) !important;
         border: none !important;
     }
     div[data-testid="stButton"] button:hover {
         background: #1d4ed8 !important;
     }
 
-    /* DANH SÁCH SẢN PHẨM HỆ SINH THÁI (MỖI APP LÀ 1 CARD/HÀNG RÕ RÀNG) */
+    /* DANH MỤC ỨNG DỤNG KHÁC (VIFIX CARD) */
     .vt-eco-wrapper {
-        margin-top: 18px;
+        margin-top: 16px;
         border-top: 1px solid #e2e8f0;
-        padding-top: 12px;
+        padding-top: 14px;
     }
     .vt-eco-heading {
-        font-size: 13px;
+        font-size: 14px;
         font-weight: 800;
         color: #0f172a;
-        margin-bottom: 10px;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-    .vt-eco-cards-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
-    }
-    @media (max-width: 640px) {
-        .vt-eco-cards-grid {
-            grid-template-columns: 1fr;
-        }
+        margin-bottom: 8px;
     }
     .vt-app-item-card {
         background: #ffffff;
         border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 10px 12px;
+        border-radius: 14px;
+        padding: 12px 16px;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 14px;
         text-decoration: none !important;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        transition: all 0.15s ease;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.02);
     }
-    .vt-app-item-card:hover {
-        border-color: #93c5fd;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.04);
-        transform: translateY(-2px);
-    }
-    .vt-app-item-top {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 5px;
+    .vt-app-item-left {
+        flex: 1;
     }
     .vt-app-item-title {
-        font-size: 12.5px;
+        font-size: 14px;
         font-weight: 800;
         color: #0f172a;
         display: flex;
         align-items: center;
-        gap: 5px;
+        gap: 6px;
+        margin-bottom: 4px;
     }
     .vt-app-item-badge {
-        font-size: 9px;
+        font-size: 10px;
         font-weight: 800;
-        padding: 1px 6px;
+        padding: 2px 7px;
         border-radius: 6px;
         color: white;
     }
     .vt-app-item-desc {
-        font-size: 11px;
+        font-size: 12.5px;
         color: #64748b;
-        line-height: 1.4;
+        line-height: 1.45;
+    }
+    .vt-app-item-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 6px 12px;
+        border-radius: 9px;
+        background: #eff6ff;
+        color: #2563eb !important;
+        font-size: 12px;
+        font-weight: 700;
+        border: 1px solid #bfdbfe;
+        white-space: nowrap;
+        text-decoration: none !important;
+        margin-top: 4px;
+    }
+    .vt-app-item-btn:hover {
+        background: #dbeafe;
     }
 
     /* FOOTER */
@@ -375,35 +375,42 @@ render_html("""
         align-items: center;
         justify-content: space-between;
         flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 16px;
-        padding-top: 10px;
+        gap: 12px;
+        margin-top: 18px;
+        padding-top: 14px;
         border-top: 1px solid #e2e8f0;
     }
     .vt-socials-group {
         display: flex;
         align-items: center;
-        gap: 6px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .vt-connect-label {
+        font-size: 13px;
+        font-weight: 700;
+        color: #475569;
+        margin-right: 4px;
     }
     .vt-social-badge {
         display: inline-flex;
         align-items: center;
-        padding: 4px 10px;
+        padding: 5px 12px;
         border-radius: 20px;
         color: #ffffff !important;
-        font-size: 11px;
+        font-size: 12px;
         font-weight: 600;
         text-decoration: none !important;
     }
     .vt-footer-copy {
-        font-size: 11px;
+        font-size: 12px;
         color: #94a3b8;
     }
 </style>
 """)
 
 # ==========================================
-# 3. TOP NAVBAR (BỎ VERSION)
+# 3. TOP NAVBAR (ĐÃ BỎ LINK VIFIX VÀ VERSION)
 # ==========================================
 render_html(f"""
 <div class="vt-nav-bar">
@@ -414,8 +421,8 @@ render_html(f"""
             <span class="vt-brand-badge">{CFG['badge']}</span>
         </div>
     </div>
-    <div class="vt-nav-right">
-        <a href="https://vifix.vercel.app/" target="_blank" class="vt-btn-link">🔧 Chuyển sang viFix Web ↗</a>
+    <div class="vt-nav-tagline">
+        Hệ sinh thái ứng dụng miễn phí {CFG['master_name']}
     </div>
 </div>
 """)
@@ -423,31 +430,35 @@ render_html(f"""
 # ==========================================
 # 4. CHIA 2 CỘT (VỪA VẶN 1 MÀN HÌNH KHÔNG CUỘN)
 # ==========================================
-col_left, col_right = st.columns([1.1, 1], gap="large")
+col_left, col_right = st.columns([1.15, 1], gap="large")
 
 with col_left:
     render_html(f"""
     <div class="vt-hero-pill">✨ {CFG['tagline']}</div>
     <h1 class="vt-hero-h1">
-        Tiện ích Giáo dục <br>
-        <span class="vt-gradient-clip">và Tải Sách NXBGD</span>
+        Tiện ích giáo dục <br>
+        <span class="vt-gradient-clip">và tải sách giáo viên</span>
     </h1>
     <p class="vt-hero-p">{CFG['app_desc']}</p>
     """)
 
-    # 3 Bước hướng dẫn hiển thị trực tiếp (lấy từ XML)
+    # 3 Bước hướng dẫn hiển thị trực tiếp (kèm link và ví dụ)
     steps_html = []
     for stp in CFG["guide_steps"]:
+        ex_html = f"<div class='vt-step-example'>{stp['example']}</div>" if stp.get("example") else ""
         steps_html.append(f"""
         <div class="vt-step-row">
             <div class="vt-num-badge">{stp['number']}</div>
-            <div class="vt-step-content"><b>{stp['title']}:</b> {stp['desc']}</div>
+            <div class="vt-step-content">
+                <b>{stp['title']}:</b> {stp['desc']}
+                {ex_html}
+            </div>
         </div>
         """)
 
     render_html(f"""
     <div class="vt-steps-box">
-        <div style="font-size: 12px; font-weight: 800; color: #0f172a; margin-bottom: 4px;">
+        <div style="font-size: 13.5px; font-weight: 800; color: #0f172a; margin-bottom: 6px;">
             📌 Hướng dẫn sử dụng:
         </div>
         {''.join(steps_html)}
@@ -457,7 +468,7 @@ with col_left:
 with col_right:
     render_html("""
     <div class="vt-card-header">
-        <span>⚡ Tải Sách Giáo Viên / Sách Bài Tập</span>
+        <span>⚡ Tải sách giáo viên / sách bài tập</span>
     </div>
     """)
 
@@ -562,35 +573,39 @@ with col_right:
                 st.error(f"❌ Có lỗi phát sinh: {str(e)}")
 
 # ==========================================
-# 5. GIỚI THIỆU SẢN PHẨM HỆ SINH THÁI (CÓ MÔ TẢ ĐẦY ĐỦ)
+# 5. GIỚI THIỆU ỨNG DỤNG KHÁC (CHỈ HIỂN THỊ VIFIX KÈM MÔ TẢ)
 # ==========================================
 eco_cards_html = []
 for app in CFG["ecosystem"]:
-    target = "_blank" if app["url"] != "#" else "_self"
     card_html = f"""
-    <a href="{app['url']}" target="{target}" class="vt-app-item-card">
-        <div class="vt-app-item-top">
-            <span class="vt-app-item-title"><span>{app['icon']}</span> {app['name']}</span>
-            <span class="vt-app-item-badge" style="background-color: {app['badge_color']};">{app['badge']}</span>
+    <div class="vt-app-item-card">
+        <div class="vt-app-item-left">
+            <div class="vt-app-item-title">
+                <span>{app['icon']}</span>
+                <span>{app['name']}</span>
+                <span class="vt-app-item-badge" style="background-color: {app['badge_color']};">{app['badge']}</span>
+                <span style="font-size:12.5px;color:#64748b;font-weight:600;">– {app['tagline']}</span>
+            </div>
+            <div class="vt-app-item-desc">{app['description']}</div>
         </div>
-        <div class="vt-app-item-desc">{app['description']}</div>
-    </a>
+        <a href="{app['url']}" target="_blank" class="vt-app-item-btn">
+            Bắt đầu sử dụng ↗
+        </a>
+    </div>
     """
     eco_cards_html.append(card_html)
 
 render_html(f"""
 <div class="vt-eco-wrapper">
     <div class="vt-eco-heading">
-        <span>🌐 Hệ sinh thái ứng dụng {CFG['master_name']}</span>
+        <span>🌐 Ứng dụng khác trong hệ sinh thái {CFG['master_name']}:</span>
     </div>
-    <div class="vt-eco-cards-grid">
-        {''.join(eco_cards_html)}
-    </div>
+    {''.join(eco_cards_html)}
 </div>
 """)
 
 # ==========================================
-# 6. FOOTER GỌN GÀNG (1 DÒNG ĐÁY MÀN HÌNH)
+# 6. FOOTER KẾT NỐI MẠNG XÃ HỘI
 # ==========================================
 social_pills = []
 for s in CFG["socials"]:
@@ -602,7 +617,7 @@ for s in CFG["socials"]:
 render_html(f"""
 <div class="vt-bottom-footer">
     <div class="vt-socials-group">
-        <span style="font-size: 11px; font-weight: 700; color: #64748b; margin-right: 4px;">Kết nối:</span>
+        <span class="vt-connect-label">💬 {CFG['connect_message']}:</span>
         {''.join(social_pills)}
     </div>
     <div class="vt-footer-copy">
