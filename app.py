@@ -104,14 +104,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Đồng bộ link từ query param (nếu người dùng bấm link mẫu hoặc mở từ chia sẻ)
-query_url = st.query_params.get("url", "")
-if "book_url" not in st.session_state:
-    st.session_state["book_url"] = query_url if query_url else ""
-elif query_url and st.session_state["book_url"] != query_url:
-    st.session_state["book_url"] = query_url
-
-# Custom CSS phong cách viFix với các nút tiện ích gọn gàng
+# Custom CSS phong cách viFix
 render_html("""
 <style>
     #MainMenu {visibility: hidden;}
@@ -254,45 +247,20 @@ render_html("""
         flex: 1;
     }
 
-    /* LINK MẪU VÀ ICON COPY GỌN GÀNG */
+    /* KHUNG VÍ DỤ LINK MẪU */
     .vt-example-container {
-        display: flex;
-        align-items: center;
-        gap: 6px;
         margin-top: 6px;
         background: #f0f9ff;
         border: 1px solid #bae6fd;
         border-radius: 8px;
-        padding: 5px 8px;
+        padding: 6px 10px;
     }
-    .vt-example-link-clickable {
-        font-size: 11.5px;
+    .vt-example-text {
+        font-size: 12px;
         color: #0369a1;
         font-family: ui-monospace, monospace;
         word-break: break-all;
-        text-decoration: none;
-        flex: 1;
-        line-height: 1.35;
-    }
-    .vt-example-link-clickable:hover {
-        color: #0284c7;
-        text-decoration: underline;
-    }
-    .vt-copy-icon-link {
-        font-size: 13px;
-        text-decoration: none !important;
-        cursor: pointer;
-        opacity: 0.8;
-        transition: transform 0.15s, opacity 0.15s;
-        display: inline-flex;
-        align-items: center;
-        padding: 2px 4px;
-        border-radius: 4px;
-    }
-    .vt-copy-icon-link:hover {
-        opacity: 1;
-        transform: scale(1.15);
-        background: #e0f2fe;
+        line-height: 1.4;
     }
 
     /* CỘT PHẢI: CARD TẢI SÁCH */
@@ -300,52 +268,18 @@ render_html("""
         font-size: 17px;
         font-weight: 800;
         color: #0f172a;
-        margin-bottom: 8px;
+        margin-bottom: 12px;
         display: flex;
         align-items: center;
         gap: 8px;
     }
-
-    /* THANH TOOLBAR TIỆN ÍCH TRÊN Ô NHẬP LIÊN KẾT */
-    .vt-toolbar-container {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 4px;
-    }
-    .vt-toolbar-label {
+    .vt-input-label-row {
         font-size: 13.5px;
         font-weight: 700;
         color: #334155;
+        margin-bottom: 6px;
     }
 
-    /* Tinh chỉnh nút nhỏ gọn thanh lịch trong toolbar */
-    button[data-testid="stBaseButton-secondary"]:has(p:contains("Dùng mẫu")),
-    button[data-testid="stBaseButton-secondary"]:has(p:contains("Xóa")),
-    div[data-testid="column"]:has(button[key="btn_use_sample"]) button,
-    div[data-testid="column"]:has(button[key="btn_clear_input"]) button,
-    div.row-widget.stButton button {
-        height: 30px !important;
-        min-height: 30px !important;
-        padding: 2px 10px !important;
-        font-size: 12.5px !important;
-        font-weight: 600 !important;
-        border-radius: 7px !important;
-        background: #f8fafc !important;
-        border: 1px solid #cbd5e1 !important;
-        color: #475569 !important;
-        line-height: 1.2 !important;
-        box-shadow: none !important;
-    }
-    div.row-widget.stButton button:hover {
-        background: #f1f5f9 !important;
-        border-color: #94a3b8 !important;
-        color: #0f172a !important;
-    }
-    div.row-widget.stButton button:active {
-        background: #e2e8f0 !important;
-    }
-    /* Riêng nút tải sách chính luôn to, nổi bật và đẹp */
     div[data-testid="stButton"] button[kind="primary"],
     button[data-testid="stBaseButton-primary"] {
         height: 44px !important;
@@ -524,20 +458,14 @@ with col_left:
 
     # 3 Bước hướng dẫn hiển thị liền mạch, tinh tế
     steps_html = []
-    sample_target_url = "https://taphuan.nxbgd.vn/tap-huan/doc-sach/sgv-tin-hoc-12.4926897532"
     for stp in CFG["guide_steps"]:
         ex_box = ""
         if stp.get("example"):
             raw_ex = stp['example']
-            m = re.search(r'https?://[^\s]+', raw_ex)
-            target_url = m.group(0) if m else raw_ex
-            sample_target_url = target_url
             clean_display = raw_ex.replace("Ví dụ: ", "").strip()
-            
             ex_box = f"""
             <div class="vt-example-container">
-                <a href="?url={target_url}" class="vt-example-link-clickable" title="Nhấn để tự động điền link mẫu này">{clean_display}</a>
-                <a href="?url={target_url}" class="vt-copy-icon-link" title="Nhấn để tự động điền link mẫu này">📋</a>
+                <span class="vt-example-text">{clean_display}</span>
             </div>
             """
         steps_html.append(f"""
@@ -564,31 +492,18 @@ with col_right:
     <div class="vt-card-header">
         <span>⚡ Tải sách giáo viên / sách bài tập</span>
     </div>
+    <div class="vt-input-label-row">
+        Nhập liên kết sách:
+    </div>
     """)
 
-    # Thanh công cụ chứa nhãn và các nút tiện ích thao tác tức thì
-    tb_left, tb_btn1, tb_btn2 = st.columns([5.2, 2.6, 1.4], gap="small")
-    with tb_left:
-        render_html('<div class="vt-toolbar-label" style="line-height:28px;">Nhập liên kết sách:</div>')
-    with tb_btn1:
-        if st.button("📋 Dùng mẫu", key="btn_use_sample", help="Điền liên kết sách mẫu"):
-            st.session_state["book_url"] = sample_target_url
-            st.rerun()
-    with tb_btn2:
-        if st.button("✕ Xóa", key="btn_clear_input", help="Xóa ô nhập"):
-            st.session_state["book_url"] = ""
-            st.rerun()
-
-    # Ô nhập link đồng bộ hoàn toàn với session_state["book_url"]
+    # Ô nhập link trực tiếp, người dùng dán link và tải sách
     url = st.text_input(
         "Nhập liên kết sách:",
-        value=st.session_state["book_url"],
+        value="",
         placeholder="https://taphuan.nxbgd.vn/tap-huan/doc-sach/sgv-tin-hoc-12.4926897532",
         key="book_url_input"
     )
-
-    if url != st.session_state["book_url"]:
-        st.session_state["book_url"] = url
 
     btn_download = st.button("🚀 Bắt đầu tải sách PDF", type="primary", use_container_width=True)
 
