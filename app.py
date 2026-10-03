@@ -104,7 +104,11 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Custom CSS phong cách viFix với các nút Copy/Paste tiện ích
+# Khởi tạo session_state cho ô nhập link sách
+if "book_url" not in st.session_state:
+    st.session_state["book_url"] = ""
+
+# Custom CSS phong cách viFix với các nút tiện ích gọn gàng
 render_html("""
 <style>
     #MainMenu {visibility: hidden;}
@@ -257,92 +261,35 @@ render_html("""
         background: #f0f9ff;
         border: 1px solid #bae6fd;
         border-radius: 8px;
-        padding: 6px 10px;
+        padding: 7px 12px;
     }
     .vt-example-text {
-        font-size: 12px;
+        font-size: 12.5px;
         color: #0369a1;
         font-family: ui-monospace, monospace;
         word-break: break-all;
         flex: 1;
     }
-    .vt-btn-copy-fill {
-        background: #2563eb;
-        color: white !important;
-        border: none;
-        border-radius: 6px;
-        padding: 4px 10px;
-        font-size: 11.5px;
-        font-weight: 700;
-        cursor: pointer;
-        transition: all 0.15s ease;
-        white-space: nowrap;
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-    }
-    .vt-btn-copy-fill:hover {
-        background: #1d4ed8;
-        transform: translateY(-1px);
-    }
 
-    /* THANH CÔNG CỤ DÁN & XÓA TRÊN Ô NHẬP */
-    .vt-input-toolbar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 4px;
-    }
-    .vt-input-label {
-        font-size: 13.5px;
-        font-weight: 700;
-        color: #334155;
-    }
-    .vt-btn-group-actions {
-        display: flex;
-        gap: 6px;
-    }
-    .vt-btn-action {
-        background: #eff6ff;
-        color: #2563eb;
-        border: 1px solid #bfdbfe;
-        border-radius: 6px;
-        padding: 3px 9px;
-        font-size: 11.5px;
-        font-weight: 700;
-        cursor: pointer;
-        transition: all 0.15s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-    }
-    .vt-btn-action:hover {
-        background: #dbeafe;
-    }
-    .vt-btn-clear {
-        background: #f8fafc;
-        color: #64748b;
-        border: 1px solid #e2e8f0;
-    }
-    .vt-btn-clear:hover {
-        background: #f1f5f9;
-        color: #dc2626;
-        border-color: #fca5a5;
-    }
-
-    /* CARD TẢI SÁCH */
+    /* CỘT PHẢI: CARD TẢI SÁCH */
     .vt-card-header {
         font-size: 17px;
         font-weight: 800;
         color: #0f172a;
-        margin-bottom: 10px;
+        margin-bottom: 12px;
         display: flex;
         align-items: center;
         gap: 8px;
     }
 
+    div[data-testid="stTextInput"] {
+        margin-bottom: 8px !important;
+    }
     div[data-testid="stTextInput"] label {
-        display: none !important;
+        font-size: 13.5px !important;
+        font-weight: 700 !important;
+        color: #334155 !important;
+        margin-bottom: 6px !important;
     }
     div[data-testid="stTextInput"] input {
         border-radius: 11px !important;
@@ -357,18 +304,9 @@ render_html("""
         box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
     }
     div[data-testid="stButton"] button {
-        border-radius: 12px !important;
-        background: #2563eb !important;
-        color: white !important;
-        font-weight: 800 !important;
-        font-size: 15px !important;
-        padding: 11px 20px !important;
-        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.22) !important;
-        border: none !important;
-        margin-top: 6px !important;
-    }
-    div[data-testid="stButton"] button:hover {
-        background: #1d4ed8 !important;
+        border-radius: 11px !important;
+        font-weight: 700 !important;
+        transition: all 0.2s ease !important;
     }
 
     /* CARD VIFIX */
@@ -511,35 +449,57 @@ with col_left:
     <p class="vt-hero-p">{CFG['app_desc']}</p>
     """)
 
-    # 3 Bước hướng dẫn hiển thị trực tiếp (kèm nút Sao chép & Dùng thử ở mục 2)
-    steps_html = []
-    for stp in CFG["guide_steps"]:
-        ex_box = ""
-        if stp.get("example"):
-            ex_box = f"""
-            <div class="vt-example-container">
-                <span class="vt-example-text">{stp['example']}</span>
-                <button type="button" class="vt-btn-copy-fill" onclick="copyAndFillExample('{stp['example']}')">
-                    📋 Sao chép & Dùng thử
-                </button>
-            </div>
-            """
-        steps_html.append(f"""
-        <div class="vt-step-row">
-            <div class="vt-num-badge">{stp['number']}</div>
-            <div class="vt-step-content">
-                <b>{stp['title']}:</b> {stp['desc']}
-                {ex_box}
-            </div>
-        </div>
-        """)
+    # 3 Bước hướng dẫn hiển thị trực tiếp
+    # Bước 1 & 3 render html, Bước 2 có nút native Thử ngay
+    step1 = CFG["guide_steps"][0] if len(CFG["guide_steps"]) > 0 else None
+    step2 = CFG["guide_steps"][1] if len(CFG["guide_steps"]) > 1 else None
+    step3 = CFG["guide_steps"][2] if len(CFG["guide_steps"]) > 2 else None
+
+    example_url = "https://taphuan.nxbgd.vn/tap-huan/doc-sach/sgv-tin-hoc-12.4926897532"
+    if step2 and step2.get("example"):
+        # Lấy url sạch nếu có
+        m = re.search(r'https?://[^\s]+', step2["example"])
+        if m:
+            example_url = m.group(0)
 
     render_html(f"""
-    <div class="vt-steps-box">
-        <div style="font-size: 13.5px; font-weight: 800; color: #0f172a; margin-bottom: 6px;">
+    <div class="vt-steps-box" style="margin-bottom: 0px;">
+        <div style="font-size: 13.5px; font-weight: 800; color: #0f172a; margin-bottom: 8px;">
             📌 Hướng dẫn sử dụng:
         </div>
-        {''.join(steps_html)}
+        <div class="vt-step-row">
+            <div class="vt-num-badge">1</div>
+            <div class="vt-step-content">
+                <b>{step1['title'] if step1 else 'Lấy link sách'}:</b> {step1['desc'] if step1 else ''}
+            </div>
+        </div>
+        <div class="vt-step-row">
+            <div class="vt-num-badge">2</div>
+            <div class="vt-step-content">
+                <b>{step2['title'] if step2 else 'Sao chép địa chỉ'}:</b> {step2['desc'] if step2 else ''}
+                <div class="vt-example-container" style="margin-top: 6px;">
+                    <span class="vt-example-text">{step2.get('example', example_url) if step2 else example_url}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    """)
+
+    # Nút bấm native Streamlit: Thử ngay link mẫu
+    c_btn1, c_btn2 = st.columns([1.6, 1])
+    with c_btn1:
+        if st.button("📋 Tự động điền link mẫu để thử", use_container_width=True):
+            st.session_state["book_url"] = example_url
+            st.rerun()
+
+    render_html(f"""
+    <div class="vt-steps-box" style="margin-top: 10px;">
+        <div class="vt-step-row" style="border-bottom: none;">
+            <div class="vt-num-badge">3</div>
+            <div class="vt-step-content">
+                <b>{step3['title'] if step3 else 'Tải file PDF'}:</b> {step3['desc'] if step3 else ''}
+            </div>
+        </div>
     </div>
     """)
 
@@ -548,25 +508,29 @@ with col_right:
     <div class="vt-card-header">
         <span>⚡ Tải sách giáo viên / sách bài tập</span>
     </div>
-    <div class="vt-input-toolbar">
-        <span class="vt-input-label">Nhập liên kết từ taphuan.nxbgd.vn:</span>
-        <div class="vt-btn-group-actions">
-            <button type="button" class="vt-btn-action" onclick="pasteToInput()">
-                📋 Dán
-            </button>
-            <button type="button" class="vt-btn-action vt-btn-clear" onclick="clearInput()">
-                ❌ Xóa
-            </button>
-        </div>
-    </div>
     """)
 
+    # Ô nhập link gắn trực tiếp với st.session_state
     url = st.text_input(
-        "Nhập liên kết sách:",
-        placeholder="https://taphuan.nxbgd.vn/tap-huan/doc-sach/sgv-tin-hoc-12.4926897532"
+        "Nhập liên kết từ taphuan.nxbgd.vn:",
+        value=st.session_state["book_url"],
+        placeholder="Dán link tại đây (ví dụ: https://taphuan.nxbgd.vn/tap-huan/doc-sach/...)",
+        key="book_url_input"
     )
 
-    btn_download = st.button("🚀 Bắt đầu tải sách PDF", type="primary", use_container_width=True)
+    # Nếu người dùng tự gõ/paste tay vào ô, cập nhật lại state
+    if url != st.session_state["book_url"]:
+        st.session_state["book_url"] = url
+
+    # Hàng nút thao tác: Nút Xóa ô nhập (nếu đang có chữ) và nút Bắt đầu tải
+    c_action1, c_action2 = st.columns([1, 2.5])
+    with c_action1:
+        if st.button("🗑️ Xóa link", use_container_width=True):
+            st.session_state["book_url"] = ""
+            st.rerun()
+
+    with c_action2:
+        btn_download = st.button("🚀 Bắt đầu tải sách PDF", type="primary", use_container_width=True)
 
     def fetch_book_info(book_url):
         headers = {"User-Agent": "Mozilla/5.0"}
@@ -714,67 +678,3 @@ render_html(f"""
     </div>
 </div>
 """)
-
-# ==========================================
-# 7. JAVASCRIPT HỖ TRỢ COPY & PASTE TRỰC TIẾP VÀO STREAMLIT INPUT
-# ==========================================
-st.html("""
-<script>
-function setStreamlitInput(val) {
-    const input = document.querySelector('div[data-testid="stTextInput"] input');
-    if (!input) return;
-    const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set;
-    nativeSetter.call(input, val);
-    input.dispatchEvent(new Event('input', { bubbles: true }));
-    input.dispatchEvent(new Event('change', { bubbles: true }));
-    input.focus();
-}
-
-function showNotice(msg) {
-    let box = document.getElementById('vt-floating-toast');
-    if (!box) {
-        box = document.createElement('div');
-        box.id = 'vt-floating-toast';
-        box.style = 'position:fixed;bottom:24px;right:24px;z-index:999999;background:#0f172a;color:#fff;padding:10px 18px;border-radius:10px;font-size:13px;font-weight:700;box-shadow:0 10px 25px rgba(0,0,0,0.3);transition:all 0.3s ease;';
-        document.body.appendChild(box);
-    }
-    box.innerText = msg;
-    box.style.opacity = '1';
-    box.style.display = 'block';
-    setTimeout(() => {
-        box.style.opacity = '0';
-        setTimeout(() => box.style.display = 'none', 300);
-    }, 2500);
-}
-
-function copyAndFillExample(url) {
-    const targetUrl = url || "https://taphuan.nxbgd.vn/tap-huan/doc-sach/sgv-tin-hoc-12.4926897532";
-    navigator.clipboard.writeText(targetUrl).then(() => {
-        setStreamlitInput(targetUrl);
-        showNotice("✅ Đã sao chép & tự động điền link mẫu!");
-    }).catch(() => {
-        setStreamlitInput(targetUrl);
-        showNotice("✅ Đã tự động điền link mẫu vào ô nhập!");
-    });
-}
-
-async function pasteToInput() {
-    try {
-        const text = await navigator.clipboard.readText();
-        if (!text || text.trim() === '') {
-            showNotice("⚠️ Bảng tạm (Clipboard) đang trống!");
-            return;
-        }
-        setStreamlitInput(text.trim());
-        showNotice("📋 Đã dán liên kết thành công!");
-    } catch (e) {
-        showNotice("💡 Hãy bấm vào ô nhập và nhấn Ctrl + V để dán!");
-    }
-}
-
-function clearInput() {
-    setStreamlitInput("");
-    showNotice("🗑️ Đã xóa ô nhập!");
-}
-</script>
-""", unsafe_allow_javascript=True)
