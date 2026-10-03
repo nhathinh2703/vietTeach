@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<siteConfig>
+    <!-- Thông tin chung của nền tảng vietTeach -->
+    <appInfo>
+        <brandName>vietTeach</brandName>
+        <tagline>Hệ sinh thái tiện ích hỗ trợ Giáo viên Việt Nam</tagline>
+        <version>1.0.0</version>
+        <supportEmail>contact@vietteach.edu.vn</supportEmail>
+        <copyright>© 2026 vietTeach. Tất cả các quyền được bảo lưu.</copyright>
+    </appInfo>
+
+    <!-- Kết nối mạng xã hội & cộng đồng -->
+    <!-- Thầy/Cô chỉ cần đổi thuộc tính enabled="true" và điền link khi có trang chính thức -->
+    <socials>
+        <social id="facebook">
+            <name>Facebook</name>
+            <enabled>true</enabled>
+            <url>https://facebook.com</url>
+            <color>#1877F2</color>
+        </social>
+        <social id="zalo">
+            <name>Zalo</name>
+            <enabled>true</enabled>
+            <url>https://zalo.me</url>
+            <color>#0068FF</color>
+        </social>
+        <social id="youtube">
+            <name>YouTube</name>
+            <enabled>true</enabled>
+            <url>https://youtube.com</url>
+            <color>#FF0000</color>
+        </social>
+        <social id="tiktok">
+            <name>TikTok</name>
+            <enabled>true</enabled>
+            <url>https://tiktok.com</url>
+            <color>#000000</color>
+        </social>
+    </socials>
+
+    <!-- Cấu hình kiếm tiền / Ủng hộ (Bật/tắt dễ dàng trong tương lai) -->
+    <monetization>
+        <!-- Tính năng Donate / Mời ly cà phê qua mã VietQR -->
+        <donate enabled="false">
+            <message>Ủng hộ tác giả duy trì máy chủ phục vụ cộng đồng</message>
+            <bankName>MB Bank</bankName>
+            <accountNumber>0123456789</accountNumber>
+            <accountHolder>NGUYEN VAN A</accountHolder>
+            <qrImage></qrImage>
+        </donate>
+        <!-- Mã nhúng quảng cáo hoặc Banner đối tác (tương lai) -->
+        <bannerAd enabled="false">
+            <adTitle>Tài trợ</adTitle>
+            <bannerUrl></bannerUrl>
+            <targetUrl></targetUrl>
+        </bannerAd>
+    </monetization>
+</siteConfig>
