@@ -22,5 +22,6 @@ build/
 # Local PDF files
 *.pdf
 raw_materials/
+downloaded_books/
 __pycache__/
 .streamlit/
