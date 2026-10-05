@@ -29,18 +29,19 @@ def generate_tree_and_stats():
     with open(DATA_CACHE_FILE, "r", encoding="utf-8") as f:
         books = json.load(f)
 
-    # Tổ chức dữ liệu theo cây: Grade -> Subject -> Type -> List of books
-    tree = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+    # Tổ chức dữ liệu theo cây: Series -> Grade -> Subject -> Type -> List of books
+    tree = defaultdict(lambda: defaultdict(lambda: defaultdict(lambda: defaultdict(list))))
     type_counts = defaultdict(int)
-    grade_counts = defaultdict(int)
+    series_counts = defaultdict(int)
 
     for b in books:
+        series = b.get("series_label", "Bộ SGK Thống nhất")
         grade = b["grade_label"]
         subject = b["subject"]
         btype = b["type"]
-        tree[grade][subject][btype].append(b)
+        tree[series][grade][subject][btype].append(b)
         type_counts[btype] += 1
-        grade_counts[grade] += 1
+        series_counts[series] += 1
 
     total_books = len(books)
     now_str = datetime.now().strftime("%d/%m/%Y %H:%M")
@@ -49,11 +50,21 @@ def generate_tree_and_stats():
     md_lines = []
     md_lines.append(f"# 📚 CÂY THƯ MỤC VÀ DANH MỤC TOÀN BỘ SÁCH TAPHUAN.NXBGD.VN\n")
     md_lines.append(f"> **Thời gian quét & lập chỉ mục:** {now_str}  ")
-    md_lines.append(f"> **Tổng số sách đã được bóc tách link:** **{total_books} cuốn**  \n")
+    md_lines.append(f"> **Tổng số sách đã được bóc tách link:** **{total_books} cuốn** (gồm cả Bộ SGK Thống nhất & Chân trời sáng tạo)  \n")
     md_lines.append(f"---\n")
 
-    # Bảng thống kê
+    # Bảng thống kê theo Bộ sách
     md_lines.append("## 📊 1. Bảng thống kê tổng quan\n")
+    md_lines.append("### 📦 Thống kê theo Bộ sách:")
+    md_lines.append("| Bộ sách | Số lượng ấn bản | Tỷ lệ |")
+    md_lines.append("| :--- | :---: | :---: |")
+    for s_name, s_cnt in sorted(series_counts.items(), key=lambda x: -x[1]):
+        s_pct = (s_cnt / total_books * 100) if total_books else 0
+        md_lines.append(f"| **{s_name}** | **{s_cnt}** | {s_pct:.1f}% |")
+    md_lines.append(f"| **TỔNG CỘNG** | **{total_books}** | 100% |\n")
+
+    # Bảng thống kê theo Loại sách
+    md_lines.append("### 📚 Thống kê theo Loại sách:")
     md_lines.append("| Phân loại | Số lượng | Tỷ lệ | Ghi chú |")
     md_lines.append("| :--- | :---: | :---: | :--- |")
     type_names = {
@@ -68,11 +79,6 @@ def generate_tree_and_stats():
         md_lines.append(f"| **{t_name}** | **{cnt}** | {pct:.1f}% | {t_note} |")
     md_lines.append(f"| **TỔNG CỘNG** | **{total_books}** | 100% | *Đầy đủ từ Lớp 1 đến Lớp 12* |\n")
 
-    # Thống kê theo lớp
-    md_lines.append("### 📈 Thống kê theo từng khối lớp:\n")
-    md_lines.append("| Khối lớp | Tổng số sách | Sách Giáo Viên (SGV) | Sách Giáo Khoa (SGK) | Sách Bài Tập | Khác |")
-    md_lines.append("| :--- | :---: | :---: | :---: | :---: | :---: |")
-
     # Sắp xếp lớp theo thứ tự Lớp 1 -> 12, Sách khác
     def grade_sort_key(g):
         if "Lớp" in g:
@@ -80,36 +86,31 @@ def generate_tree_and_stats():
             return int(num) if num else 99
         return 100
 
-    sorted_grades = sorted(tree.keys(), key=grade_sort_key)
-    for g in sorted_grades:
-        g_books = [b for b in books if b["grade_label"] == g]
-        c_sgv = sum(1 for b in g_books if b["type"] == "SGV")
-        c_sgk = sum(1 for b in g_books if b["type"] == "SGK")
-        c_sbt = sum(1 for b in g_books if b["type"] == "SBT_VBT")
-        c_other = sum(1 for b in g_books if b["type"] == "Tai_Lieu")
-        md_lines.append(f"| **{g}** | **{len(g_books)}** | {c_sgv} | {c_sgk} | {c_sbt} | {c_other} |")
-    md_lines.append("\n---\n")
-
-    # Cây thư mục chi tiết kèm link trực tiếp
+    # Cây thư mục chi tiết theo từng Bộ sách
     md_lines.append("## 🌳 2. Cây thư mục chi tiết (Kèm Link trực tiếp)\n")
     md_lines.append("*Bấm vào tên từng cuốn sách để mở xem trực tiếp trên hệ thống Nhà xuất bản.*\n")
 
-    for g in sorted_grades:
-        g_count = grade_counts[g]
-        md_lines.append(f"### 📂 {g} ({g_count} cuốn)")
+    for s_name in sorted(tree.keys()):
+        md_lines.append(f"## 🏛️ {s_name.upper()} ({series_counts[s_name]} cuốn)\n")
+        grades = tree[s_name]
+        sorted_grades = sorted(grades.keys(), key=grade_sort_key)
         
-        subjects = tree[g]
-        for subj, types in subjects.items():
-            total_subj_books = sum(len(items) for items in types.values())
-            md_lines.append(f"- 📁 **{subj}** `({total_subj_books} ấn bản)`")
-            for t_key in ["SGV", "SGK", "SBT_VBT", "Tai_Lieu"]:
-                if t_key in types:
-                    t_label = type_names.get(t_key, (t_key, ""))[0]
-                    for b in types[t_key]:
-                        title = b["title"]
-                        url = b["doc_url"]
-                        md_lines.append(f"  - [{t_label}] [{title}]({url})")
-        md_lines.append("")
+        for g in sorted_grades:
+            g_books = [b for b in books if b.get("series_label", "Bộ SGK Thống nhất") == s_name and b["grade_label"] == g]
+            md_lines.append(f"### 📂 {g} ({len(g_books)} cuốn)")
+            
+            subjects = grades[g]
+            for subj, types in subjects.items():
+                total_subj_books = sum(len(items) for items in types.values())
+                md_lines.append(f"- 📁 **{subj}** `({total_subj_books} ấn bản)`")
+                for t_key in ["SGV", "SGK", "SBT_VBT", "Tai_Lieu"]:
+                    if t_key in types:
+                        t_label = type_names.get(t_key, (t_key, ""))[0]
+                        for b in types[t_key]:
+                            title = b["title"]
+                            url = b["doc_url"]
+                            md_lines.append(f"  - [{t_label}] [{title}]({url})")
+            md_lines.append("")
 
     # Ghi file DANH_MUC_SACH.md
     with open(MD_FILE, "w", encoding="utf-8") as f:

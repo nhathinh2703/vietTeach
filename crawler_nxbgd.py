@@ -43,7 +43,9 @@ def sanitize_filename(name):
 def scan_catalog():
     """
     Quét toàn bộ danh mục từ taphuan.nxbgd.vn qua TẤT CẢ các trang phân trang (page-1, page-2, ...)
-    để lấy đầy đủ 100% các đầu sách theo từng Lớp
+    cho cả:
+    1. Bộ SGK Thống nhất (taphuan.nxbgd.vn/tap-huan)
+    2. SGK Khác - Chân trời sáng tạo (taphuan.nxbgd.vn/tap-huan/cac-bo-sach-khac?id_book=3)
     """
     print("=" * 60)
     print("🔍 BƯỚC 1: QUÉT DANH MỤC TOÀN BỘ CÁC TRANG PHÂN TRANG (PAGES)")
@@ -54,29 +56,22 @@ def scan_catalog():
     
     catalog = []
     
-    # Quét lớp 1 đến 12 (hỗ trợ phân trang page-1, page-2, page-3, page-4...)
+    # 1. BỘ SGK THỐNG NHẤT (Lớp 1 đến 12)
+    print("\n--- 1. BỘ SGK THỐNG NHẤT ---")
     for grade in range(1, 13):
         seen_detail_urls = set()
         grade_count = 0
-        
-        # Bắt đầu từ trang 1 để phát hiện tổng số trang
         url_p1 = f"https://taphuan.nxbgd.vn/tap-huan?grade={grade}"
         try:
             r1 = session.get(url_p1, verify=False, timeout=20)
             if r1.status_code == 200:
-                # Tìm tất cả số trang từ pagination HTML: href=/tap-huan/page-X?grade=Y
                 found_pages = re.findall(r'/tap-huan/page-([0-9]+)\?grade=' + str(grade), r1.text)
                 max_page = max([int(p) for p in found_pages]) if found_pages else 1
                 
-                # Duyệt qua từng trang của khối lớp
                 for p_num in range(1, max_page + 1):
-                    if p_num == 1:
-                        p_url = url_p1
-                        r_page = r1
-                    else:
-                        p_url = f"https://taphuan.nxbgd.vn/tap-huan/page-{p_num}?grade={grade}"
-                        r_page = session.get(p_url, verify=False, timeout=20)
-                        time.sleep(0.2)
+                    p_url = url_p1 if p_num == 1 else f"https://taphuan.nxbgd.vn/tap-huan/page-{p_num}?grade={grade}"
+                    r_page = r1 if p_num == 1 else session.get(p_url, verify=False, timeout=20)
+                    time.sleep(0.15)
 
                     if r_page.status_code == 200:
                         cards = re.findall(
@@ -90,6 +85,8 @@ def scan_catalog():
                             clean_title = re.sub(r'\s+', ' ', re.sub(r'<[^>]+>', ' ', content)).strip()
                             if clean_title:
                                 catalog.append({
+                                    "series": "Bo_SGK_Thong_Nhat",
+                                    "series_label": "Bộ SGK Thống nhất",
                                     "grade_name": f"Lop_{grade:02d}",
                                     "grade_label": f"Lớp {grade}",
                                     "subject_title": clean_title,
@@ -97,50 +94,87 @@ def scan_catalog():
                                 })
                                 grade_count += 1
 
-                print(f"  • Lớp {grade:2d}: Tìm thấy {grade_count:2d} đầu sách môn học (Duyệt {max_page} trang)")
+                print(f"  • Lớp {grade:2d}: Tìm thấy {grade_count:2d} đầu sách (Duyệt {max_page} trang)")
         except Exception as e:
             print(f"  ⚠️ Lỗi khi quét Lớp {grade}: {e}")
-        time.sleep(0.3)
+        time.sleep(0.2)
         
-    # Quét các bộ sách khác (cũng kiểm tra phân trang nếu có)
-    url_other = "https://taphuan.nxbgd.vn/tap-huan/cac-bo-sach-khac"
-    try:
-        r_other = session.get(url_other, verify=False, timeout=20)
-        if r_other.status_code == 200:
-            found_other_pages = re.findall(r'page-([0-9]+)', r_other.text)
-            max_other_p = max([int(p) for p in found_other_pages]) if found_other_pages else 1
-            
-            seen_other = set()
-            other_count = 0
-            for p_num in range(1, max_other_p + 1):
-                if p_num == 1:
-                    r_op = r_other
-                else:
-                    r_op = session.get(f"https://taphuan.nxbgd.vn/tap-huan/cac-bo-sach-khac/page-{p_num}", verify=False, timeout=20)
-                    time.sleep(0.2)
+    # 2. SGK KHÁC - CHÂN TRỜI SÁNG TẠO (id_book=3, Lớp 1 đến 12)
+    print("\n--- 2. SGK KHÁC - CHÂN TRỜI SÁNG TẠO ---")
+    for grade in range(1, 13):
+        seen_detail_urls = set()
+        grade_count = 0
+        url_p1 = f"https://taphuan.nxbgd.vn/tap-huan/cac-bo-sach-khac?grade={grade}&id_book=3"
+        try:
+            r1 = session.get(url_p1, verify=False, timeout=20)
+            if r1.status_code == 200:
+                found_pages = re.findall(r'page-([0-9]+)', r1.text)
+                max_page = max([int(p) for p in found_pages]) if found_pages else 1
                 
-                cards = re.findall(
-                    r'<a[^>]*href=["\'](https://taphuan\.nxbgd\.vn/tap-huan/chi-tiet-sach/[^"\']+)["\'][^>]*>(.*?)</a>',
-                    r_op.text, re.DOTALL
-                )
-                for link, content in cards:
-                    if link in seen_other:
-                        continue
-                    seen_other.add(link)
+                for p_num in range(1, max_page + 1):
+                    p_url = url_p1 if p_num == 1 else f"https://taphuan.nxbgd.vn/tap-huan/cac-bo-sach-khac/page-{p_num}?grade={grade}&id_book=3"
+                    r_page = r1 if p_num == 1 else session.get(p_url, verify=False, timeout=20)
+                    time.sleep(0.15)
+
+                    if r_page.status_code == 200:
+                        cards = re.findall(
+                            r'<a[^>]*href=["\'](https://taphuan\.nxbgd\.vn/tap-huan/chi-tiet-sach/[^"\']+|/tap-huan/chi-tiet-sach/[^"\']+)["\'][^>]*>(.*?)</a>',
+                            r_page.text, re.DOTALL
+                        )
+                        for link, content in cards:
+                            full_link = f"https://taphuan.nxbgd.vn{link}" if link.startswith('/') else link
+                            if full_link in seen_detail_urls:
+                                continue
+                            seen_detail_urls.add(full_link)
+                            clean_title = re.sub(r'\s+', ' ', re.sub(r'<[^>]+>', ' ', content)).strip()
+                            if clean_title:
+                                catalog.append({
+                                    "series": "SGK_Khac/Chan_Troi_Sang_Tao",
+                                    "series_label": "Chân trời sáng tạo",
+                                    "grade_name": f"Lop_{grade:02d}",
+                                    "grade_label": f"Lớp {grade}",
+                                    "subject_title": clean_title,
+                                    "detail_url": full_link
+                                })
+                                grade_count += 1
+
+                print(f"  • Lớp {grade:2d} (CTST): Tìm thấy {grade_count:2d} đầu sách (Duyệt {max_page} trang)")
+        except Exception as e:
+            print(f"  ⚠️ Lỗi khi quét Lớp {grade} (CTST): {e}")
+        time.sleep(0.2)
+
+    # 3. SÁCH KHÁC DÙNG CHUNG (Lớp 13 / Môn đặc thù)
+    try:
+        url_g13 = "https://taphuan.nxbgd.vn/tap-huan/cac-bo-sach-khac?grade=13&id_book=3"
+        r13 = session.get(url_g13, verify=False, timeout=20)
+        if r13.status_code == 200:
+            cards = re.findall(
+                r'<a[^>]*href=["\'](https://taphuan\.nxbgd\.vn/tap-huan/chi-tiet-sach/[^"\']+|/tap-huan/chi-tiet-sach/[^"\']+)["\'][^>]*>(.*?)</a>',
+                r13.text, re.DOTALL
+            )
+            g13_count = 0
+            seen_g13 = set()
+            for link, content in cards:
+                full_link = f"https://taphuan.nxbgd.vn{link}" if link.startswith('/') else link
+                if full_link not in seen_g13:
+                    seen_g13.add(full_link)
                     clean_title = re.sub(r'\s+', ' ', re.sub(r'<[^>]+>', ' ', content)).strip()
                     if clean_title:
                         catalog.append({
-                            "grade_name": "Sach_Khac",
-                            "grade_label": "Sách khác",
+                            "series": "SGK_Khac/Chan_Troi_Sang_Tao",
+                            "series_label": "Chân trời sáng tạo",
+                            "grade_name": "Lop_Dung_Chung",
+                            "grade_label": "Lớp dùng chung",
                             "subject_title": clean_title,
-                            "detail_url": link
+                            "detail_url": full_link
                         })
-                        other_count += 1
-            print(f"  • Sách khác: Tìm thấy {other_count:2d} đầu sách (Duyệt {max_other_p} trang)")
+                        g13_count += 1
+            if g13_count > 0:
+                print(f"  • Lớp dùng chung (CTST): Tìm thấy {g13_count:2d} đầu sách")
     except Exception as e:
-        print(f"  ⚠️ Lỗi khi quét danh mục sách khác: {e}")
+        print(f"  ⚠️ Lỗi khi quét lớp dùng chung: {e}")
 
-    print(f"\n=> TỔNG CỘNG ĐÃ QUÉT ĐẦY ĐỦ: {len(catalog)} đầu sách môn học.")
+    print(f"\n=> TỔNG CỘNG ĐÃ QUÉT ĐẦY ĐỦ: {len(catalog)} đầu sách môn học cả 2 bộ.")
     return catalog
 
 
@@ -179,6 +213,8 @@ def _fetch_single_detail(session, item):
                     cat_type = "Tai_Lieu"
 
                 results.append({
+                    "series": item.get("series", "Bo_SGK_Thong_Nhat"),
+                    "series_label": item.get("series_label", "Bộ SGK Thống nhất"),
                     "grade_name": item["grade_name"],
                     "grade_label": item["grade_label"],
                     "subject": item["subject_title"],
@@ -439,8 +475,9 @@ def main():
 
     for i, book in enumerate(filtered_books, 1):
         print(f"\n[{i}/{len(filtered_books)}]", end=" ")
-        # Phân thư mục theo từng Lớp: downloaded_books/Lop_12/SGV/
-        target_folder = os.path.join(OUTPUT_DIR, book["grade_name"], book["type"])
+        # Phân thư mục theo cấu trúc phẳng: downloaded_books/[Bộ]/Lop_xx/
+        series_dir = book.get("series", "Bo_SGK_Thong_Nhat")
+        target_folder = os.path.join(OUTPUT_DIR, series_dir, book["grade_name"])
         ok = download_and_make_pdf(session, book, target_folder, max_workers=args.workers)
         if ok:
             success_count += 1
