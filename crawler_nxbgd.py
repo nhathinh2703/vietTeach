@@ -42,10 +42,11 @@ def sanitize_filename(name):
 
 def scan_catalog():
     """
-    Quét toàn bộ danh mục từ taphuan.nxbgd.vn để lấy danh sách các đầu sách theo từng Lớp
+    Quét toàn bộ danh mục từ taphuan.nxbgd.vn qua TẤT CẢ các trang phân trang (page-1, page-2, ...)
+    để lấy đầy đủ 100% các đầu sách theo từng Lớp
     """
     print("=" * 60)
-    print("🔍 BƯỚC 1: QUÉT DANH MỤC TẤT CẢ CÁC LỚP TRÊN TAPHUAN.NXBGD.VN")
+    print("🔍 BƯỚC 1: QUÉT DANH MỤC TOÀN BỘ CÁC TRANG PHÂN TRANG (PAGES)")
     print("=" * 60)
     
     session = requests.Session()
@@ -53,65 +54,93 @@ def scan_catalog():
     
     catalog = []
     
-    # Quét lớp 1 đến 12
+    # Quét lớp 1 đến 12 (hỗ trợ phân trang page-1, page-2, page-3, page-4...)
     for grade in range(1, 13):
-        url = f"https://taphuan.nxbgd.vn/tap-huan?grade={grade}"
+        seen_detail_urls = set()
+        grade_count = 0
+        
+        # Bắt đầu từ trang 1 để phát hiện tổng số trang
+        url_p1 = f"https://taphuan.nxbgd.vn/tap-huan?grade={grade}"
         try:
-            r = session.get(url, verify=False, timeout=20)
-            if r.status_code == 200:
-                cards = re.findall(
-                    r'<a[^>]*href=["\'](https://taphuan\.nxbgd\.vn/tap-huan/chi-tiet-sach/[^"\']+)["\'][^>]*>(.*?)</a>',
-                    r.text, re.DOTALL
-                )
-                seen = set()
-                count = 0
-                for link, content in cards:
-                    if link in seen:
-                        continue
-                    seen.add(link)
-                    clean_title = re.sub(r'\s+', ' ', re.sub(r'<[^>]+>', ' ', content)).strip()
-                    if clean_title:
-                        catalog.append({
-                            "grade_name": f"Lop_{grade:02d}",
-                            "grade_label": f"Lớp {grade}",
-                            "subject_title": clean_title,
-                            "detail_url": link
-                        })
-                        count += 1
-                print(f"  • Lớp {grade:2d}: Tìm thấy {count:2d} đầu sách môn học")
+            r1 = session.get(url_p1, verify=False, timeout=20)
+            if r1.status_code == 200:
+                # Tìm tất cả số trang từ pagination HTML: href=/tap-huan/page-X?grade=Y
+                found_pages = re.findall(r'/tap-huan/page-([0-9]+)\?grade=' + str(grade), r1.text)
+                max_page = max([int(p) for p in found_pages]) if found_pages else 1
+                
+                # Duyệt qua từng trang của khối lớp
+                for p_num in range(1, max_page + 1):
+                    if p_num == 1:
+                        p_url = url_p1
+                        r_page = r1
+                    else:
+                        p_url = f"https://taphuan.nxbgd.vn/tap-huan/page-{p_num}?grade={grade}"
+                        r_page = session.get(p_url, verify=False, timeout=20)
+                        time.sleep(0.2)
+
+                    if r_page.status_code == 200:
+                        cards = re.findall(
+                            r'<a[^>]*href=["\'](https://taphuan\.nxbgd\.vn/tap-huan/chi-tiet-sach/[^"\']+)["\'][^>]*>(.*?)</a>',
+                            r_page.text, re.DOTALL
+                        )
+                        for link, content in cards:
+                            if link in seen_detail_urls:
+                                continue
+                            seen_detail_urls.add(link)
+                            clean_title = re.sub(r'\s+', ' ', re.sub(r'<[^>]+>', ' ', content)).strip()
+                            if clean_title:
+                                catalog.append({
+                                    "grade_name": f"Lop_{grade:02d}",
+                                    "grade_label": f"Lớp {grade}",
+                                    "subject_title": clean_title,
+                                    "detail_url": link
+                                })
+                                grade_count += 1
+
+                print(f"  • Lớp {grade:2d}: Tìm thấy {grade_count:2d} đầu sách môn học (Duyệt {max_page} trang)")
         except Exception as e:
             print(f"  ⚠️ Lỗi khi quét Lớp {grade}: {e}")
         time.sleep(0.3)
         
-    # Quét các bộ sách khác
+    # Quét các bộ sách khác (cũng kiểm tra phân trang nếu có)
     url_other = "https://taphuan.nxbgd.vn/tap-huan/cac-bo-sach-khac"
     try:
-        r = session.get(url_other, verify=False, timeout=20)
-        if r.status_code == 200:
-            cards = re.findall(
-                r'<a[^>]*href=["\'](https://taphuan\.nxbgd\.vn/tap-huan/chi-tiet-sach/[^"\']+)["\'][^>]*>(.*?)</a>',
-                r.text, re.DOTALL
-            )
-            seen = set()
-            count = 0
-            for link, content in cards:
-                if link in seen:
-                    continue
-                seen.add(link)
-                clean_title = re.sub(r'\s+', ' ', re.sub(r'<[^>]+>', ' ', content)).strip()
-                if clean_title:
-                    catalog.append({
-                        "grade_name": "Sach_Khac",
-                        "grade_label": "Sách khác",
-                        "subject_title": clean_title,
-                        "detail_url": link
-                    })
-                    count += 1
-            print(f"  • Sách khác: Tìm thấy {count:2d} đầu sách")
+        r_other = session.get(url_other, verify=False, timeout=20)
+        if r_other.status_code == 200:
+            found_other_pages = re.findall(r'page-([0-9]+)', r_other.text)
+            max_other_p = max([int(p) for p in found_other_pages]) if found_other_pages else 1
+            
+            seen_other = set()
+            other_count = 0
+            for p_num in range(1, max_other_p + 1):
+                if p_num == 1:
+                    r_op = r_other
+                else:
+                    r_op = session.get(f"https://taphuan.nxbgd.vn/tap-huan/cac-bo-sach-khac/page-{p_num}", verify=False, timeout=20)
+                    time.sleep(0.2)
+                
+                cards = re.findall(
+                    r'<a[^>]*href=["\'](https://taphuan\.nxbgd\.vn/tap-huan/chi-tiet-sach/[^"\']+)["\'][^>]*>(.*?)</a>',
+                    r_op.text, re.DOTALL
+                )
+                for link, content in cards:
+                    if link in seen_other:
+                        continue
+                    seen_other.add(link)
+                    clean_title = re.sub(r'\s+', ' ', re.sub(r'<[^>]+>', ' ', content)).strip()
+                    if clean_title:
+                        catalog.append({
+                            "grade_name": "Sach_Khac",
+                            "grade_label": "Sách khác",
+                            "subject_title": clean_title,
+                            "detail_url": link
+                        })
+                        other_count += 1
+            print(f"  • Sách khác: Tìm thấy {other_count:2d} đầu sách (Duyệt {max_other_p} trang)")
     except Exception as e:
         print(f"  ⚠️ Lỗi khi quét danh mục sách khác: {e}")
 
-    print(f"\n=> Tổng cộng: {len(catalog)} đầu sách môn học.")
+    print(f"\n=> TỔNG CỘNG ĐÃ QUÉT ĐẦY ĐỦ: {len(catalog)} đầu sách môn học.")
     return catalog
 
 
@@ -301,6 +330,7 @@ import argparse
 def parse_args():
     parser = argparse.ArgumentParser(description="Tool cào và tải sách từ taphuan.nxbgd.vn")
     parser.add_argument("--scan-only", action="store_true", help="Chỉ quét danh mục và lưu cache, chưa tải sách")
+    parser.add_argument("--rescan", action="store_true", help="Quét mới toàn bộ danh mục bất kể cache cũ")
     parser.add_argument("--type", choices=["sgv", "sgv_sbt", "all"], default=None, help="Loại sách: sgv, sgv_sbt, hoặc all")
     parser.add_argument("--grade", type=int, choices=list(range(1, 13)), default=None, help="Khối lớp (1-12). Bỏ trống để tải tất cả")
     parser.add_argument("--workers", type=int, default=8, help="Số luồng tải ảnh song song (mặc định 8)")
@@ -319,19 +349,22 @@ def main():
 
     # 1. Kiểm tra cache dữ liệu
     books_list = []
-    if os.path.exists(DATA_CACHE_FILE):
+    if os.path.exists(DATA_CACHE_FILE) and not args.rescan:
         try:
             with open(DATA_CACHE_FILE, "r", encoding="utf-8") as f:
                 books_list = json.load(f)
             print(f"📋 Đã tìm thấy file cache '{DATA_CACHE_FILE}' chứa {len(books_list)} cuốn sách.")
-            if not args.yes and not args.type:
+            if not args.yes and not args.type and not args.scan_only:
                 choice = input("Bạn có muốn dùng lại danh sách này không? (Y/n): ").strip().lower()
                 if choice == 'n':
                     books_list = []
+            elif args.scan_only and not args.rescan:
+                # Nếu chỉ chạy --scan-only mà không bảo --rescan nhưng cache đã có, rescan lại nếu người dùng yêu cầu quét
+                pass
         except Exception:
             books_list = []
 
-    if not books_list:
+    if not books_list or args.rescan:
         catalog = scan_catalog()
         books_list = scan_book_editions(catalog)
 
