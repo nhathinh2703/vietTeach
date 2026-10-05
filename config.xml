@@ -14,21 +14,30 @@
         <connectMessage>Kết nối với chúng tôi để xem hướng dẫn và sử dụng các tiện ích miễn phí</connectMessage>
     </brand>
 
-    <!-- HỆ SINH THÁI CÁC ỨNG DỤNG (vietTeach và viFix) -->
+    <!-- HỆ SINH THÁI CÁC ỨNG DỤNG (vietTeach, vietBook và viFix) -->
     <ecosystem>
         <app id="viTeach">
             <name>vietTeach</name>
             <badge>Miễn phí</badge>
             <badgeColor>#2563eb</badgeColor>
-            <tagline>Tiện ích giáo dục và tải sách giáo viên</tagline>
-            <description>Hỗ trợ giáo viên tải trọn bộ sách giáo viên, sách bài tập và chuyên đề chất lượng gốc từ taphuan.nxbgd.vn hoàn toàn miễn phí, nhanh chóng và tiện lợi.</description>
+            <tagline>Tiện ích giáo dục và bài giảng</tagline>
+            <description>Công cụ hỗ trợ thầy cô tạo bài giảng, câu hỏi trắc nghiệm và tiện ích giảng dạy trực quan tại trường học.</description>
             <url>#</url>
-            <icon>📚</icon>
+            <icon>🎓</icon>
+        </app>
+        <app id="vietBook">
+            <name>vietBook</name>
+            <badge>Miễn phí</badge>
+            <badgeColor>#10b981</badgeColor>
+            <tagline>Thư viện tra cứu &amp; Tải sách điện tử</tagline>
+            <description>Kho sách điện tử trọn bộ từ lớp 1 đến lớp 12: Bộ SGK Thống nhất, Chân trời sáng tạo, Cánh diều. Tải nhanh chất lượng gốc miễn phí.</description>
+            <url>https://vietbook.streamlit.app/</url>
+            <icon>📖</icon>
         </app>
         <app id="vifix">
             <name>viFix</name>
             <badge>Miễn phí</badge>
-            <badgeColor>#2563eb</badgeColor>
+            <badgeColor>#f59e0b</badgeColor>
             <tagline>Quản lý sửa chữa và bảo hành điện tử</tagline>
             <description>Công cụ cần thiết cho cửa hàng sửa chữa và kỹ thuật viên: Tạo phiếu nhận máy, theo dõi chi phí, tạo thẻ bảo hành điện tử QR, nhắc hẹn khách hàng và theo dõi doanh thu trên nhiều thiết bị.</description>
             <url>https://vifix.vercel.app/</url>
